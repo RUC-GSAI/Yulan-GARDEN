@@ -1,0 +1,33 @@
+{
+    "debug": false,
+    "input_path": "",
+    "input_ext": "",
+    "output_path": "",
+    "if_filter": true,
+    "filter_paras":{
+    },
+    "if_clean": false,
+    "clean_paras":{
+
+    },
+    "if_merge": false,
+    "merge_paras":{
+
+    },
+    "if_cut": false,
+    "cut_paras":{
+
+    },
+    "if_parallel": true,
+    "parallel_paras":{
+        // it means if the input data is already cut into pieces
+        "if_cut": false,
+        // cut_tmpfiles_path will be os.path.join(<output_path>/.tmp)
+        "cut_tmpfiles_path": "",
+        "n_process": 10,
+        "chunk_size": -1,
+    },
+    "if_debug": false,
+    "debug_paras": {
+    },
+}

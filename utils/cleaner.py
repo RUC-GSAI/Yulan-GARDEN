@@ -1,5 +1,6 @@
 from utils.settings import *
 import re
+from zhconv import convert
 
 class Cleaner:
     def __init__(self, setting: Settings=None) -> None:
@@ -23,11 +24,12 @@ class Cleaner:
             for rm_re in self.rm_re_rules:
                 text = self._rm_re(text, rm_re)
         if len(self.sub_re_rules) > 0:
-            for sub_re, repl_text in self.sub_re_rules:
+            for sub_re, repl_text in self.sub_re_rules.items():
                 text = self._sub_re(text, sub_re, repl_text)
         if len(self.rm_str_rules) > 0:
             for rm_str in self.rm_str_rules:
                 text = self._rm_text(text, rm_str)
+        text = self._tra2sim(text)
         return text    
 
     def _rm_re(self, text: str, re_text) -> str:
@@ -61,7 +63,17 @@ class Cleaner:
         '''
         remove consecutive newlines in the text
         '''
-        patterns = [r'[ |\t]+\n', '\\n']
+        patterns = [r'[ |\t]+\n', r'\\n']
+        # produce consecutive newlines
         for pattern in patterns:
-            text = self._rm_re(text, pattern)
+            text = self._sub_re(text, pattern, '\n')
+        # remove consecutive newlines
+        text = self._sub_re(text, r'\n{2,}', '\n')
+        return text
+    
+    def _tra2sim(self, text: str) -> str:
+        '''
+        traditional characters to their simplified versions
+        '''
+        text = convert(text, 'zh-cn')
         return text

@@ -1,5 +1,4 @@
 {
-    "debug": false,
     "input_path": "",
     "input_ext": "",
     "output_path": "",
@@ -37,6 +36,13 @@
     },
     "if_clean": false,
     "clean_paras":{
+        "extractor": {
+            "use": true,
+            "mode": {"html": true, "mobi": false, "epub": false},
+            "keep_newline_labels": [
+                
+            ]
+        },
         "rm_crawlerchars": {
             "use": true
         },
@@ -118,7 +124,7 @@
                 "编者按",
                 "分享到："
             ]
-        },
+        }
     },
     "if_merge": false,
     "merge_paras":{
@@ -135,9 +141,20 @@
         // cut_tmpfiles_path will be os.path.join(<output_path>/.tmp)
         "cut_tmpfiles_path": "",
         "n_process": 10,
-        "chunk_size": -1,
+        "chunk_size": -1
     },
     "if_debug": false,
     "debug_paras": {
-    },
+        "debug_report_path": "debug_report.json",
+        "debug_short_texts": {
+            "use" : true,
+            "length": 200
+        },
+        "debug_non_ch": {
+            "use": true
+        },
+        "debug_short_lines": {
+            "use": true
+        }
+    }
 }

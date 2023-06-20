@@ -8,34 +8,44 @@ class Filter:
 
     def load_settings(self, setting: Settings) -> None:
         self.filter_setting = setting['filter_paras']
-        self.fil_short_texts = self.filter_setting['self.filter_setting']
+        self.fil_short_texts = self.filter_setting['fil_short_texts']
         self.fil_non_ch = self.filter_setting['fil_non_ch']
         self.fil_copyright = self.filter_setting['fil_copyright']
         self.fil_short_lines = self.filter_setting['fil_short_lines']
     
 
-    def filter_single_text(self, text: str) -> bool:
+    def filter_single_text(self, text: str, outInfo: bool=False) -> bool:
         '''
         if single text should be filtered (i.e. scattered),
         return True 
         '''       
         if self.fil_short_texts['use']:
             if self._fil_short_texts(text, self.fil_short_texts['param']):
+                if outInfo:
+                    print('The text is too short.')
                 return True
         if self.fil_non_ch['use']:
             if self._fil_non_ch(text, self.fil_non_ch['param']):
+                if outInfo:
+                    print('Too many non-Chinese characters.')
                 return True
         
         if self.fil_copyright['use']:
             for word in self.fil_copyright['ch_list']:
                 if self._fil_copyright_ch(text, word):
+                    if outInfo:
+                        print('Chinese copyright.')
                     return True
             for word in self.fil_copyright['en_list']:
                 if self._fil_copyright_en(text, word):
+                    if outInfo:
+                        print('English copyright.')
                     return True
         
         if self.fil_short_lines['use']:
             if self._fil_short_lines(text, self.fil_short_lines['param']):
+                if outInfo:
+                    print('Too many short lines.')
                 return True
         
         return False
@@ -76,7 +86,9 @@ class Filter:
         return True (filter this text)
         '''   
         splits = text.split('\n')
-        res = sum([1 for each in splits if (len(re.findall(r'[\u4e00-\u9fa5]', each)) <= 3)]) / len(splits)
+        for each in splits:
+            print(len(each))
+        res = sum([1 for each in splits if len(each) > 0 and (len(re.findall(r'[\u4e00-\u9fa5]', each)) <= 3)]) / len(splits)
         return res > threshold
         
 

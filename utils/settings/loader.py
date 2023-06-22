@@ -8,11 +8,7 @@ class Settings:
         self.settings = defaultdict(str)
         self.conf_path = ""
 
-    '''
-    error:
-         1. 未加载文件
-         2. 文件流使用load而不是loads
-    '''
+
     def load_settings(
             self, conf_path: str=""
     ) -> None:

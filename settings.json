@@ -1,7 +1,7 @@
 {
-    "input_path": "",
-    "input_ext": "",
-    "output_path": "",
+    "input_path": "/fs/archive/share/u2022101014/ZHEM_test/input_data/",
+    "input_ext": "jsonl",
+    "output_path": "/fs/archive/share/u2022101014/ZHEM_test/output_data/",
     "if_filter": true,
     "filter_paras":{
         "fil_short_texts": {
@@ -96,7 +96,6 @@
         "sub_re_rules": {
             "use": true,
             "re_dict": {
-                "Hello": "hello",
                 "图片来源：[a-z|A-Z|0-9|,|;|/| |\\.|-]*\n": "\n",
                 "标签：.{0,8}\n": "\n",
                 "\n.*摄\n": "\n",
@@ -134,11 +133,10 @@
     "cut_paras":{
 
     },
-    "if_parallel": true,
+    "if_parallel": false,
     "parallel_paras":{
-        // it means if the input data is already cut into pieces
+        "comments": "it means if the input data is already cut into pieces",
         "if_cut": false,
-        // cut_tmpfiles_path will be os.path.join(<output_path>/.tmp)
         "cut_tmpfiles_path": "",
         "n_process": 10,
         "chunk_size": -1

@@ -9,6 +9,7 @@ from utils.extractor import *
 from tqdm import tqdm
 
 from utils.utils import prepare_works
+from utils.debugger import log_text
 
 import os   
 
@@ -16,14 +17,18 @@ def process_work_mult_threads(work_path: str, output_path: str, extract_module: 
     process_parallel_works(work_path, output_path, extract_module, clean_module, filter_module, parallel_paras)
 
 def process_work_single_thread(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter):
+    if not os.path.exists(output_path): os.makedirs(output_path, exist_ok=True)
     for file in tqdm(prepare_works(work_path)):
+        filename = os.path.basename(file)
         nwork_in = os.path.join(work_path, file)
-        nwork_out = os.path.join(output_path, file)
+        nwork_out = os.path.join(output_path, filename)
+        log_text(f"work_in_path: {nwork_in}, work_out_path: {nwork_out}")
+        assert(nwork_in != nwork_out)
         try:
             with open(nwork_in, mode='r', encoding='utf-8') as fr, open(nwork_out, mode='w', encoding='utf-8') as fw:
                 for line in fr:
                     nrecord = json.loads(line)
-                    text = process_single_text(nrecord['text'], extract_module, clean_module, filter_module)
+                    text = process_single_text(nrecord['content'], extract_module, clean_module, filter_module)
                     if text != "":
                         nrecord['text'] = text
                         fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')
@@ -58,9 +63,19 @@ def process_work(conf: Settings):
             work_path = os.path.join(output_path, '.tmp')
             if not os.path.exists(work_path): os.makedirs(work_path, exist_ok=True)
             if input_ext in TXT_SUFFIX:
-                dump_txts2jsonl(input_path=input_path, output_path=work_path, source_tag='?')
+                dump_txts2jsonl(
+                    input_path=input_path, 
+                    output_path=work_path, 
+                    keep_text_only=False,
+                    source_tag='?'
+                )
             elif input_ext in JSONL_SUFFIX:
-                dump_jsonls2jsonl(input_path=input_path, output_path=work_path, source_tag='?')
+                dump_jsonls2jsonl(
+                    input_path=input_path, 
+                    output_path=work_path, 
+                    keep_text_only=False,
+                    source_tag='?'
+                )
         
         # load settings for modules
         extract_module = Extractor(setting=settings)
@@ -68,11 +83,21 @@ def process_work(conf: Settings):
         filter_module = Filter(setting=settings)
 
         # do work and calculate work statistics
-        print(f"Parallel Setting: {settings['if_parallel']}")
+        log_text(f"Parallel Setting: {settings['if_parallel']}")
         if settings['if_parallel']:
-            process_work_mult_threads(work_path, output_path, extract_module, clean_module, filter_module, parallel_paras)
+            process_work_mult_threads(work_path, os.path.join(output_path, 'cleaned'), extract_module, clean_module, filter_module, parallel_paras)
         else:
-            process_work_single_thread(work_path, output_path, extract_module, clean_module, filter_module)
+            process_work_single_thread(
+                work_path=work_path, 
+                output_path=os.path.join(output_path, 'cleaned'), 
+                extract_module=extract_module, 
+                clean_module=clean_module, 
+                filter_module=filter_module)
+            dump_jsonls2jsonl(
+                input_path=os.path.join(output_path, 'cleaned'),
+                output_path=os.path.join(output_path, 'out'),
+                keep_text_only=True
+            )
 
     if settings['if_merge']:
         # todo

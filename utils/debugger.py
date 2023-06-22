@@ -3,6 +3,10 @@ import re
 import numpy as np
 import json
 import time
+from datetime import datetime
+
+def log_text(text: str, desc: str="LOG"):
+    print(f"[{desc}, {datetime.now()}]: ", text)
 
 class Debugger():
     def __init__(self, setting: Settings=None) -> None:

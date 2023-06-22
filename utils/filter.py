@@ -86,8 +86,6 @@ class Filter:
         return True (filter this text)
         '''   
         splits = text.split('\n')
-        for each in splits:
-            print(len(each))
         res = sum([1 for each in splits if len(each) > 0 and (len(re.findall(r'[\u4e00-\u9fa5]', each)) <= 3)]) / len(splits)
         return res > threshold
         

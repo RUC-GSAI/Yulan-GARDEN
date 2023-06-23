@@ -1,0 +1,89 @@
+{
+    "input_path": "/fs/archive/share/u2022101014/ZHEM_test/input_data/",
+    "input_ext": "jsonl",
+    "output_path": "/fs/archive/share/u2022101014/ZHEM_test/output_data/",
+    "if_filter": true,
+    "filter_paras":{
+        "fil_short_texts": {
+            "use" : false,
+            "param": 170
+        },
+        "fil_non_ch": {
+            "use": false,
+            "param": 0.4
+        },
+        "fil_copyright": {
+            "use": false,
+            "ch_list":[
+            ],
+            "en_list": [
+            ]
+        },
+        "fil_short_lines": {
+            "use": false,
+            "param": 0.25
+        }
+    },
+    "if_clean": false,
+    "clean_paras":{
+        "extractor": {
+            "use": false,
+            "mode": {"html": false, "mobi": false, "epub": false},
+            "keep_newline_labels": [
+                
+            ]
+        },
+        "rm_crawlerchars": {
+            "use": true
+        },
+        "sub_newline": {
+            "use": true
+        },
+        "rm_re_rules": {
+            "use": true,
+            "re_list": [
+            ]
+        },
+        "sub_re_rules": {
+            "use": true,
+            "re_dict": {
+                "hello": ""
+            }
+        },
+        "rm_str_rules": {
+            "use": false,
+            "str_list": [
+            ]
+        }
+    },
+    "if_merge": false,
+    "merge_paras":{
+
+    },
+    "if_cut": false,
+    "cut_paras":{
+
+    },
+    "if_parallel": true,
+    "parallel_paras":{
+        "comments": "it means if the input data is already cut into pieces",
+        "if_cut": false,
+        "cut_tmpfiles_path": "",
+        "n_process": 10,
+        "chunk_size": -1
+    },
+    "if_debug": false,
+    "debug_paras": {
+        "debug_report_path": "debug_report.json",
+        "debug_short_texts": {
+            "use" : true,
+            "length": 200
+        },
+        "debug_non_ch": {
+            "use": true
+        },
+        "debug_short_lines": {
+            "use": true
+        }
+    }
+}

@@ -14,6 +14,7 @@ class Cleaner:
         self.rm_re_rules = self.clean_setting['rm_re_rules']['re_list'] if self.clean_setting['rm_re_rules']['use'] else []
         self.sub_re_rules = self.clean_setting['sub_re_rules']['re_dict'] if self.clean_setting['sub_re_rules']['use'] else dict()
         self.rm_str_rules = self.clean_setting['rm_str_rules']['str_list'] if self.clean_setting['rm_str_rules']['use'] else []
+        self.tra2sim = self.clean_setting['tra2sim']
 
     def clean_single_text(self, text: str) -> str:
         if self.rm_crawlerchars['use']:
@@ -29,7 +30,9 @@ class Cleaner:
         if len(self.rm_str_rules) > 0:
             for rm_str in self.rm_str_rules:
                 text = self._rm_text(text, rm_str)
-        text = self._tra2sim(text)
+        if self.tra2sim['use']:
+            target = self.tra2sim['target']
+            text = self._tra2sim(text, target)
         return text    
 
     def _rm_re(self, text: str, re_text) -> str:
@@ -71,9 +74,9 @@ class Cleaner:
         text = self._sub_re(text, r'\n{2,}', '\n')
         return text
     
-    def _tra2sim(self, text: str) -> str:
+    def _tra2sim(self, text: str, target: str="zh-cn") -> str:
         '''
         traditional characters to their simplified versions
         '''
-        text = convert(text, 'zh-cn')
+        text = convert(text, target)
         return text

@@ -63,4 +63,4 @@ def prepare_parallel_works(input_path, output_path, input_ext='jsonl', source_ta
     work_count = _calculate_work_count(works=works, input_ext=input_ext)
     # Split work into pieces
     n_workers = n_process - 1 if n_process < 1 else cpu_count() - 1
-    _prepare_tmp_files(input_ext=input_ext, tmp_path=os.path.join(output_path, '.tmp'), works=works, n_workers=n_workers, work_count=work_count, source_tag=source_tag)
+    _prepare_tmp_files(input_ext=input_ext, tmp_path=output_path, works=works, n_workers=n_workers, work_count=work_count, source_tag=source_tag)

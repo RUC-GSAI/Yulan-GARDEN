@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from utils.settings import *
 
+from utils.debugger import * 
 from utils.cleaner import *
 from utils.filter import *
 from utils.extractor import *
@@ -39,17 +40,19 @@ def _process_single_work(work_path: str, output_path: str, modules: dict, text_k
     # prepare name of input file and output file
     tot_cnt, succ_cnt, ifile_path = 0, 0, work_path
     idir_name, ifname = os.path.split(work_path)
-    if not os.path.exists(output_path): os.makedirs(output_path)
+    if not os.path.exists(output_path): os.makedirs(output_path, exist_ok=True)
     fname, fext = os.path.splitext(ifname)
     ofile_path = os.path.join(output_path, f'{_now_timestamp()}-{fname}.{fext}')
     # prepare modules
-    extract_module, clean_module, filter_module = modules['exm'], modules['clm'], modules['fim']
+    extract_module, clean_module, filter_module, debugger_module = modules['exm'], modules['clm'], modules['fim'], modules['dem']
     # do single work
     with open(ifile_path, mode='r', encoding='utf-8') as fr, open(ofile_path, mode='w', encoding='utf-8') as fw:
         for line in fr:
             # try:
             tot_cnt += 1
             nrecord = json.loads(line)
+            if debugger_module is not None:
+                debugger_module.debug_single_text(nrecord[text_key])
             text = _process_single_text(nrecord[text_key], extract_module, clean_module, filter_module)
             if text != "":
                 nrecord['text'] = text
@@ -59,12 +62,12 @@ def _process_single_work(work_path: str, output_path: str, modules: dict, text_k
             #     print(f'Exception for Bad File at {ifile_path} for {ne}\n')
     return (tot_cnt, succ_cnt)
 
-def process_parallel_works(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str):
+def process_parallel_works(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str, debugger_module: Debugger=None):
     # Prepare parameters
     n_process = cpu_count() - 1 if parallel_paras['n_process'] <= 1 else parallel_paras['n_process'] - 1
     chunk_size = n_process * 3 if parallel_paras['chunk_size'] <= 0 else parallel_paras['chunk_size']
     pool = Pool(n_process)
-    modules = {"exm": extract_module, "clm": clean_module, "fim": filter_module}
+    modules = {"exm": extract_module, "clm": clean_module, "fim": filter_module, "dem": debugger_module}
     assert(n_process > 0 and chunk_size > 0)
 
     # Prepare works

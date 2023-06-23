@@ -133,7 +133,7 @@
     "cut_paras":{
 
     },
-    "if_parallel": false,
+    "if_parallel": true,
     "parallel_paras":{
         "comments": "it means if the input data is already cut into pieces",
         "if_cut": false,

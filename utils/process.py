@@ -13,12 +13,12 @@ from utils.debugger import log_text
 
 import os   
 
-def process_work_mult_threads(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras):
-    process_parallel_works(work_path, output_path, extract_module, clean_module, filter_module, parallel_paras)
+def process_work_mult_threads(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str):
+    process_parallel_works(work_path, output_path, extract_module, clean_module, filter_module, parallel_paras, text_key)
 
 def process_work_single_thread(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter):
     if not os.path.exists(output_path): os.makedirs(output_path, exist_ok=True)
-    for file in tqdm(prepare_works(work_path)):
+    for file in tqdm(prepare_works(work_path), desc='Process work single thread'):
         filename = os.path.basename(file)
         nwork_in = os.path.join(work_path, file)
         nwork_out = os.path.join(output_path, filename)
@@ -53,7 +53,6 @@ def process_work(conf: Settings):
     input_path, input_ext, output_path = settings['input_path'], settings['input_ext'], settings['output_path']
 
     if settings['if_filter'] or settings['if_clean']:
-        # specify work path
         if settings['if_parallel']:
             parallel_paras = settings['parallel_paras']
             # todo: chunk_size
@@ -61,7 +60,6 @@ def process_work(conf: Settings):
             work_path = os.path.join(output_path, '.tmp')
         else:
             work_path = os.path.join(output_path, '.tmp')
-            if not os.path.exists(work_path): os.makedirs(work_path, exist_ok=True)
             if input_ext in TXT_SUFFIX:
                 dump_txts2jsonl(
                     input_path=input_path, 
@@ -85,19 +83,34 @@ def process_work(conf: Settings):
         # do work and calculate work statistics
         log_text(f"Parallel Setting: {settings['if_parallel']}")
         if settings['if_parallel']:
-            process_work_mult_threads(work_path, os.path.join(output_path, 'cleaned'), extract_module, clean_module, filter_module, parallel_paras)
+            process_work_mult_threads(
+                # todo: text_key
+                work_path=work_path, 
+                output_path=os.path.join(output_path, '.cleaned'), 
+                extract_module=extract_module, 
+                clean_module=clean_module, 
+                filter_module=filter_module, 
+                parallel_paras=parallel_paras,
+                text_key="content")
+            dump_jsonls2jsonl(
+                input_path=os.path.join(output_path, '.cleaned'),
+                output_path=os.path.join(output_path, 'out'),
+                keep_text_only=True
+            )
+            log_text(f"Final data dir: {os.path.join(output_path, 'out')}")
         else:
             process_work_single_thread(
                 work_path=work_path, 
-                output_path=os.path.join(output_path, 'cleaned'), 
+                output_path=os.path.join(output_path, '.cleaned'), 
                 extract_module=extract_module, 
                 clean_module=clean_module, 
                 filter_module=filter_module)
             dump_jsonls2jsonl(
-                input_path=os.path.join(output_path, 'cleaned'),
+                input_path=os.path.join(output_path, '.cleaned'),
                 output_path=os.path.join(output_path, 'out'),
                 keep_text_only=True
             )
+            log_text(f"Final data dir: {os.path.join(output_path, 'out')}")
 
     if settings['if_merge']:
         # todo

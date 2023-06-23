@@ -1,1 +1,2 @@
-from utils.parallel.prepare_parallel_works import *
+from utils.parallel.prepare_parallel_works import (prepare_parallel_works)
+from utils.parallel.process_parallel_works import (process_parallel_works)

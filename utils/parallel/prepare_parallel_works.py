@@ -4,8 +4,7 @@ import os
 from multiprocessing import cpu_count
 from tqdm import tqdm
 
-from utils.utils import prepare_works
-from utils.dumper import dump_data2jsonl
+from utils.utils import *
 from utils.rules import *
 
 def _calculate_work_count(works, input_ext: str) -> int:

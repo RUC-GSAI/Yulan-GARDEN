@@ -1,23 +1,18 @@
 from utils.settings import *
 from utils.parallel import prepare_parallel_works, process_parallel_works
 from utils.rules import *
-from utils.dumper import *
-from utils.cleaner import *
-from utils.filter import *
-from utils.debugger import *
-from utils.extractor import *
+from utils.workers import *
 
 from tqdm import tqdm
 
-from utils.utils import prepare_works
-from utils.debugger import log_text
+from utils.utils import *
 
 import os   
 
-def process_work_mult_threads(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str, debugger_module: Debugger=None):
-    process_parallel_works(work_path, output_path, extract_module, clean_module, filter_module, parallel_paras, text_key, debugger_module)
+def process_work_mult_threads(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str):
+    process_parallel_works(work_path, output_path, extract_module, clean_module, filter_module, parallel_paras, text_key)
 
-def process_work_single_thread(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, text_key: str="content", debugger_module: Debugger=None):
+def process_work_single_thread(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, text_key: str="content"):
     if not os.path.exists(output_path): os.makedirs(output_path, exist_ok=True)
     for file in tqdm(prepare_works(work_path), desc='Process work single thread'):
         filename = os.path.basename(file)
@@ -29,8 +24,6 @@ def process_work_single_thread(work_path: str, output_path: str, extract_module:
             with open(nwork_in, mode='r', encoding='utf-8') as fr, open(nwork_out, mode='w', encoding='utf-8') as fw:
                 for line in fr:
                     nrecord = json.loads(line)
-                    if debugger_module is not None:
-                        debugger_module.debug_single_text(nrecord[text_key])
                     text = process_single_text(nrecord[text_key], extract_module, clean_module, filter_module)
                     if text != "":
                         nrecord['text'] = text
@@ -109,6 +102,7 @@ def process_work(conf: Settings):
                         if cnt >= debugger_module.sample_num:
                             break
             debugger_module.debug_params_report()
+        log_text(f"generating debug report {debugger_module.debug_report_path} finish.")
 
         # do work and calculate work statistics
         log_text(f"Parallel Setting: {settings['if_parallel']}")

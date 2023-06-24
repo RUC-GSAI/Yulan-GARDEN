@@ -1,8 +1,10 @@
 {
     "input_path": "/fs/archive/share/u2022101014/ZHEM_test/input_data/",
     "input_ext": "jsonl",
+    "input_text_key": "text",
     "output_path": "/fs/archive/share/u2022101014/ZHEM_test/output_data/",
-    "if_filter": true,
+    "output_source_value": "the-dataset-name",
+    "if_filter": false,
     "filter_paras":{
         "fil_short_texts": {
             "use" : false,
@@ -24,7 +26,7 @@
             "param": 0.25
         }
     },
-    "if_clean": false,
+    "if_clean": true,
     "clean_paras":{
         "extractor": {
             "use": false,
@@ -34,26 +36,29 @@
             ]
         },
         "rm_crawlerchars": {
-            "use": true
+            "use": false
         },
         "sub_newline": {
-            "use": true
+            "use": false
         },
         "rm_re_rules": {
-            "use": true,
+            "use": false,
             "re_list": [
             ]
         },
         "sub_re_rules": {
-            "use": true,
+            "use": false,
             "re_dict": {
-                "hello": ""
             }
         },
         "rm_str_rules": {
             "use": false,
             "str_list": [
             ]
+        },
+        "tra2sim": {
+            "use": false,
+            "target": "zh-cn"
         }
     },
     "if_merge": false,
@@ -72,18 +77,26 @@
         "n_process": 10,
         "chunk_size": -1
     },
-    "if_debug": false,
+    "if_debug": true,
     "debug_paras": {
         "debug_report_path": "debug_report.json",
+        "debug_cases_num": 5,
+        "debug_sample_num_per_file": 10000, 
         "debug_short_texts": {
             "use" : true,
-            "length": 200
+            "length": 200,
+            "if_fix_fil_ratio": false,
+            "exp_fil_ratio": 0.05
         },
         "debug_non_ch": {
-            "use": true
+            "use": true,
+            "if_fix_fil_ratio": false,
+            "exp_fil_ratio": 0.05
         },
         "debug_short_lines": {
-            "use": true
+            "use": true,
+            "if_fix_fil_ratio": false,
+            "exp_fil_ratio": 0.05
         }
     }
 }

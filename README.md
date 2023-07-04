@@ -55,7 +55,7 @@ Filter (`./utils/workers/filter.py`) is a module to filter the useless or sensit
 
 2. Non-Chinese texts (hyperparamter: biggest ratio of non-Chinese characters , default: 0.4).
 
-3. `copy right` texts.
+3. 'Copyright' texts.
 
 4. Texts with too many short lines (hyperparamter: biggest ratio of short lines, short lines means the length of the line is less than 3, default: 0.25).
 
@@ -63,9 +63,9 @@ All the hyperparamters are changable in the light of `Debugger`.
 
 ### Cleaner
 
-Cleaner (`./utils/workers/cleaner.py`) is a module to clean the dirty substrings in the texts, including 3 different parts:
+Cleaner (`./utils/workers/cleaner.py`) is a module to clean the dirty substrings in the texts, including 6 different parts:
 
-1. `extractor`: in [title](# Extractor).
+1. `extractor`: in [Extractor]().
 
 2. `rm_crawlerchars`: remove the unused patterns in the text (e.g. '&nbsp').
 

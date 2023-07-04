@@ -29,9 +29,11 @@ class Extractor:
                     text = BeautifulSoup(text, features='html.parser').get_text(separator="\n", strip=True)
                     text = text.strip()
                     return text
-                elif self.mode == "epub":
+                elif self.mode == "epub":                    
                     return text
                 elif self.mode == "mobi":
+                    return text
+                elif self.mode == "":
                     return text
                 else:
                     raise Exception(f"Not valid mode name {self.mode}")

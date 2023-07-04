@@ -8,9 +8,9 @@ def run_zhem(conf_path: str, if_force: int):
     setting_module = Settings(conf_path)
 
     # remove output_path
-    if if_force:
+    if if_force and os.path.exists(setting_module.settings['output_path']):
         shutil.rmtree(setting_module.settings['output_path'])
-        os.makedirs(setting_module.settings['output_path'], exist_ok=True)
+    os.makedirs(setting_module.settings['output_path'], exist_ok=True)
 
     # process work
     ret_args = process_work(setting_module)

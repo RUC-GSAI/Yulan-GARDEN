@@ -330,7 +330,7 @@ class Debugger():
         '''
         Modify 'self.non_ch' according to the non-Chinese characters ratio of the text
         '''
-        non_ch_ratio = len(re.findall(r'[^\u4e00-\u9fa5]|[a-zA-Z0-9]', text)) / len(text)
+        non_ch_ratio = len(re.findall(r'[^\u4e00-\u9fa5]|[a-zA-Z0-9]', text)) / (len(text) + 1e-8)
         # non_ch_ratio is a percentage, non_ch is a label (integer)
         non_ch = int(100 * non_ch_ratio)
         if non_ch >= 100:
@@ -343,7 +343,7 @@ class Debugger():
         Modify 'self.short_lines' according to the short lines ratio of the text
         '''
         splits = text.split('\n')
-        short_lines_ratio = sum([1 for each in splits if len(each) > 0 and (len(re.findall(r'[\u4e00-\u9fa5]', each)) <= 3)]) / len(splits)
+        short_lines_ratio = sum([1 for each in splits if len(each) > 0 and (len(re.findall(r'[\u4e00-\u9fa5]', each)) <= 3)]) / (len(splits) + 1e-8)
         # short_lines_ratio is a percentage, short_lines is a label (integer)
         short_lines = int(100 * short_lines_ratio)
         if short_lines >= 100:

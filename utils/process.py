@@ -72,7 +72,6 @@ def process_work(conf: Settings):
                 dump_txts2jsonl(
                     input_path=input_path, 
                     output_path=work_path, 
-                    keep_text_only=False,
                     source_tag=output_source_value
                 )
             elif input_ext in JSONL_SUFFIX:
@@ -80,6 +79,12 @@ def process_work(conf: Settings):
                     input_path=input_path, 
                     output_path=work_path, 
                     keep_text_only=False,
+                    source_tag=output_source_value
+                )
+            elif input_ext in EPUB_SUFFIX:
+                dump_epub2jsonl(
+                    input_path=input_path, 
+                    output_path=work_path, 
                     source_tag=output_source_value
                 )
             
@@ -103,7 +108,7 @@ def process_work(conf: Settings):
                         if cnt >= debugger_module.sample_num:
                             break
             debugger_module.debug_params_report()
-        log_text(f"generating debug report {debugger_module.debug_report_path} finish.")
+            log_text(f"generating debug report {debugger_module.debug_report_path} finish.")
 
         if settings['if_filter'] or settings['if_clean']:
             # do work and calculate work statistics

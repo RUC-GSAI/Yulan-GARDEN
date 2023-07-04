@@ -66,6 +66,8 @@ class Cleaner:
         '''
         remove consecutive newlines in the text
         '''
+        # strip each line
+        # text = '\n'.join([line for line in text.split('\n') if line.strip()])
         patterns = [r'[ |\t]+\n', r'\\n']
         # produce consecutive newlines
         for pattern in patterns:

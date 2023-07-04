@@ -48,12 +48,13 @@ def process_work(conf: Settings):
     settings = conf.settings
     input_path, input_ext, input_text_key, output_path, output_source_value = settings['input_path'], settings['input_ext'], settings['input_text_key'], settings['output_path'], settings['output_source_value']
 
-    if settings['if_debug']:
-        debugger_module = Debugger(settings)
-    else:
-        debugger_module = None
+    # # 这部分似乎是没有用的 直接删掉
+    # if settings['if_debug']:
+    #     debugger_module = Debugger(settings)
+    # else:
+    #     debugger_module = None
 
-    if settings['if_filter'] or settings['if_clean']:
+    if settings['if_filter'] or settings['if_clean'] or settings['if_debug']:
         # regularize extension of input file 
         if settings['if_parallel']:
             parallel_paras = settings['parallel_paras']
@@ -81,7 +82,7 @@ def process_work(conf: Settings):
                     keep_text_only=False,
                     source_tag=output_source_value
                 )
-        
+            
         # load settings for modules
         if settings['if_debug']: debugger_module = Debugger(settings)
         else: debugger_module = None
@@ -104,41 +105,42 @@ def process_work(conf: Settings):
             debugger_module.debug_params_report()
         log_text(f"generating debug report {debugger_module.debug_report_path} finish.")
 
-        # do work and calculate work statistics
-        log_text(f"Parallel Setting: {settings['if_parallel']}")
-        if settings['if_parallel']:
-            process_work_mult_threads(
-                work_path=work_path, 
-                output_path=os.path.join(output_path, '.cleaned'), 
-                extract_module=extract_module, 
-                clean_module=clean_module, 
-                filter_module=filter_module, 
-                parallel_paras=parallel_paras,
-                text_key=input_text_key,
-            )
-            dump_jsonls2jsonl(
-                input_path=os.path.join(output_path, '.cleaned'),
-                output_path=os.path.join(output_path, 'out'),
-                keep_text_only=True,
-                source_tag=output_source_value
-            )
-            log_text(f"Final data dir: {os.path.join(output_path, 'out')}")
-        else:
-            process_work_single_thread(
-                work_path=work_path, 
-                output_path=os.path.join(output_path, '.cleaned'), 
-                extract_module=extract_module, 
-                clean_module=clean_module, 
-                filter_module=filter_module,
-                text_key=input_text_key
-            )
-            dump_jsonls2jsonl(
-                input_path=os.path.join(output_path, '.cleaned'),
-                output_path=os.path.join(output_path, 'out'),
-                keep_text_only=True,
-                source_tag=output_source_value
-            )
-            log_text(f"Final data dir: {os.path.join(output_path, 'out')}")
+        if settings['if_filter'] or settings['if_clean']:
+            # do work and calculate work statistics
+            log_text(f"Parallel Setting: {settings['if_parallel']}")
+            if settings['if_parallel']:
+                process_work_mult_threads(
+                    work_path=work_path, 
+                    output_path=os.path.join(output_path, '.cleaned'), 
+                    extract_module=extract_module, 
+                    clean_module=clean_module, 
+                    filter_module=filter_module, 
+                    parallel_paras=parallel_paras,
+                    text_key=input_text_key,
+                )
+                dump_jsonls2jsonl(
+                    input_path=os.path.join(output_path, '.cleaned'),
+                    output_path=os.path.join(output_path, 'out'),
+                    keep_text_only=True,
+                    source_tag=output_source_value
+                )
+                log_text(f"Final data dir: {os.path.join(output_path, 'out')}")
+            else:
+                process_work_single_thread(
+                    work_path=work_path, 
+                    output_path=os.path.join(output_path, '.cleaned'), 
+                    extract_module=extract_module, 
+                    clean_module=clean_module, 
+                    filter_module=filter_module,
+                    text_key=input_text_key
+                )
+                dump_jsonls2jsonl(
+                    input_path=os.path.join(output_path, '.cleaned'),
+                    output_path=os.path.join(output_path, 'out'),
+                    keep_text_only=True,
+                    source_tag=output_source_value
+                )
+                log_text(f"Final data dir: {os.path.join(output_path, 'out')}")
 
     if settings['if_merge']:
         # todo

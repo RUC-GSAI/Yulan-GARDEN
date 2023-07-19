@@ -3,6 +3,7 @@ import os
 
 from multiprocessing import cpu_count
 from tqdm import tqdm
+import lzma
 
 from utils.utils import *
 from utils.rules import *
@@ -14,6 +15,11 @@ def _calculate_work_count(works, input_ext: str) -> int:
         work_count = 0
         for work in works:
             work_count += int(os.popen('wc -l %s' % work).read().split()[0])
+    elif input_ext in TXTXZ_SUFFIX:
+        work_count = 0
+        for work in works:
+            with lzma.open(work, mode='rb') as fr:
+                work_count += len(fr.readlines())
     else:
         raise Exception(f"Invalid input extension {input_ext} is given in _calculate_work_count..\n")
     return work_count
@@ -52,6 +58,25 @@ def _prepare_tmp_files(input_ext: str, tmp_path: str, works: list, n_workers: in
                 print(f'bad file {work} for exception {ne}\n')
         if cnt > 0:
             dump_data2jsonl(path=os.path.join(tmp_path, f'{split}.jsonl'), data=res, source_tag=source_tag, text_key="text")
+            cnt, res, split = 0, [], split + 1
+    elif input_ext in TXTXZ_SUFFIX:
+        for work in tqdm(works, desc="Generating .tmp files"):
+            try:
+                with lzma.open(work, mode='rb') as fr:
+                    for line in fr:
+                        element = extract_text(line)
+                        # if the element is None, ignore it
+                        if element == None:
+                            continue
+                        cnt += 1
+                        res.append(element)
+                        if cnt >= tmp_file_line:
+                            dump_data2jsonl(path=os.path.join(tmp_path, f'{split}.jsonl'), data=res, source_tag=source_tag, text_key="text")
+                            cnt, res, split = 0, [], split + 1
+            except Exception as ne:
+                continue
+        if cnt > 0:
+            dump_data2jsonl(path=os.path.join(tmp_path, f'{split}.jsonl'), data=res, source_tag=source_tag)
             cnt, res, split = 0, [], split + 1
     else:
         raise Exception(f"Unsupported extentsion type {source_tag} in _prepare_tmp_files..\n")

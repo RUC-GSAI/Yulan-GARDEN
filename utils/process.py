@@ -12,9 +12,9 @@ import os
 def process_work_mult_threads(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str):
     process_parallel_works(work_path, output_path, extract_module, clean_module, filter_module, parallel_paras, text_key)
 
-def process_work_single_thread(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, text_key: str="content"):
+def process_work_single_thread(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, text_key: str="content", input_ext: str='jsonl'):
     if not os.path.exists(output_path): os.makedirs(output_path, exist_ok=True)
-    for file in tqdm(prepare_works(work_path), desc='Process work single thread'):
+    for file in tqdm(prepare_works(work_path, input_ext=input_ext), desc='Process work single thread'):
         filename = os.path.basename(file)
         nwork_in = os.path.join(work_path, file)
         nwork_out = os.path.join(output_path, filename)
@@ -47,12 +47,6 @@ def process_single_text(text: str, extract_module: Extractor, clean_module: Clea
 def process_work(conf: Settings):
     settings = conf.settings
     input_path, input_ext, input_text_key, output_path, output_source_value = settings['input_path'], settings['input_ext'], settings['input_text_key'], settings['output_path'], settings['output_source_value']
-
-    # # 这部分似乎是没有用的 直接删掉
-    # if settings['if_debug']:
-    #     debugger_module = Debugger(settings)
-    # else:
-    #     debugger_module = None
 
     if settings['if_filter'] or settings['if_clean'] or settings['if_debug']:
         # regularize extension of input file 
@@ -87,6 +81,12 @@ def process_work(conf: Settings):
                     output_path=work_path, 
                     source_tag=output_source_value
                 )
+            elif input_ext in TXTXZ_SUFFIX:
+                dump_txtxz2jsonl(
+                    input_path=input_path, 
+                    output_path=work_path, 
+                    source_tag=output_source_value
+                )
             
         # load settings for modules
         if settings['if_debug']: debugger_module = Debugger(settings)
@@ -97,7 +97,8 @@ def process_work(conf: Settings):
 
         # generate debugger report
         if settings['if_debug']:
-            debugger_worklist = prepare_works(work_path)
+            debugger_worklist = prepare_works(work_path, input_ext='jsonl')
+            print(len(debugger_worklist))
             for file in debugger_worklist:
                 with open(file, mode='r', encoding='utf-8') as fr:
                     cnt = 0
@@ -146,11 +147,3 @@ def process_work(conf: Settings):
                     source_tag=output_source_value
                 )
                 log_text(f"Final data dir: {os.path.join(output_path, 'out')}")
-
-    if settings['if_merge']:
-        # todo
-        pass
-
-    if settings['if_cut']:
-        # todo
-        pass

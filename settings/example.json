@@ -6,6 +6,20 @@
     "output_source_value": "the-dataset-name",
     "if_filter": false,
     "filter_paras":{
+        "fil_my_rules":{
+            "comments": "To make ZHEM more flexible, we have added a new filtering interface that allows users to add custom filter rules to 'utils/utils/my_rules.py'.",
+            "use": false,
+            "rules": {
+
+            }
+        },
+        "fil_dirty_words": {
+            "comments": "Remove the text if the words in 'words' appear in the text.", 
+            "use": false,
+            "words": [
+                
+            ]
+        },
         "fil_short_texts": {
             "use" : false,
             "param": 170
@@ -24,6 +38,18 @@
         "fil_short_lines": {
             "use": false,
             "param": 0.25
+        },
+        "fil_meta": {
+            "comments": "remove **a text** if an item consists new keys in 'meta'",
+            "use": false,
+            "keys_list": {
+                "name_key1": [
+
+                ],
+                "name_key2": [
+
+                ]
+            }
         }
     },
     "if_clean": true,
@@ -35,6 +61,13 @@
                 
             ]
         },
+        "my_funcs": {
+            "comments": "To make ZHEM more flexible, we have added a new cleaning interface that allows users to add custom cleaning functions to 'utils/utils/my_funcs.py'.",
+            "use": true,
+            "funcs": [
+                "for_bdbk"
+            ]
+        },
         "rm_crawlerchars": {
             "use": false
         },
@@ -42,17 +75,40 @@
             "use": false
         },
         "rm_re_rules": {
+            "comments": "remove text fragments matching any of regular expressions in `re_list`",
             "use": false,
             "re_list": [
             ]
         },
         "sub_re_rules": {
+            "comments": "substitute(replace) text fragments by any <key, value> pair of `re_dict`, key is an regular expression, value is an plain text",
             "use": false,
             "re_dict": {
             }
         },
         "rm_str_rules": {
+            "comments": "remove text fragments matching any of strings in `str_list`",
             "use": false,
+            "str_list": [
+            ]
+        },
+        "rm_re_lines":{
+            "comments": "remove **a line** if any text fragments in this line matching any of **regular expressions** in `re_list`",
+            "use": false,
+            "re_list": [
+
+            ]
+        },
+        "rm_str_lines":{
+            "comments": "remove **a line** if any text fragments in this line matching any of **string** in `str_list`",
+            "use": false,
+            "str_list": [
+
+            ]
+        },
+        "rm_str_seg": {
+            "comments": "remove **a segment** after matching any of **string** in `str_list` if any text fragments in this text are matched",
+            "use": true,
             "str_list": [
             ]
         },
@@ -60,14 +116,6 @@
             "use": false,
             "target": "zh-cn"
         }
-    },
-    "if_merge": false,
-    "merge_paras":{
-
-    },
-    "if_cut": false,
-    "cut_paras":{
-
     },
     "if_parallel": true,
     "parallel_paras":{
@@ -79,7 +127,7 @@
     },
     "if_debug": true,
     "debug_paras": {
-        "debug_report_path": "debug_report.json",
+        "debug_report_path": "debug_report/debug_report.json",
         "debug_cases_num": 5,
         "debug_sample_num_per_file": 10000, 
         "debug_short_texts": {

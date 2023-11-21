@@ -51,13 +51,20 @@ In `Cleaner` report, for each rule in Cleaner, Debugger includes the match ratio
 
 Filter (`./utils/workers/filter.py`) is a module to filter the useless or sensitive texts, including 4 different rules:
 
-1. Short texts (hyperparamter: minimum length of the texts, default: 170).
+1. `fil_short_texts`: short texts (hyperparamter: minimum length of the texts, default: 170).
 
-2. Non-Chinese texts (hyperparamter: biggest ratio of non-Chinese characters , default: 0.4).
+2. `fil_non_ch`: non-Chinese texts (hyperparamter: biggest ratio of non-Chinese characters , default: 0.4).
 
-3. 'Copyright' texts.
+3. `fil_copyright`: 'Copyright' texts.
 
-4. Texts with too many short lines (hyperparamter: biggest ratio of short lines, short lines means the length of the line is less than 3, default: 0.25).
+4. `fil_short_lines`: texts with too many short lines (hyperparamter: biggest ratio of short lines, short lines means the length of the line is less than 3, default: 0.25).
+
+5. `fil_dirty_words`: dirty words.
+
+6. `fil_meta`: meta information. Filter texts if its meta information is not allowed in the corresponding meta id.
+
+7. `fil_my_rules`: other custom rules. To make ZHEM more flexible, you can set your custom rules in `./utils/utils/my_rules.py` as functions and add the names of the functions into the setting files.
+
 
 All the hyperparamters are changable in the light of `Debugger`.
 
@@ -76,5 +83,15 @@ Cleaner (`./utils/workers/cleaner.py`) is a module to clean the dirty substrings
 5. `sub_re`: substitute regular expressions.
 
 6. `rm_str`: remove raw strings.
+
+7. `rm_re_lines`: remove **a line** if any text fragments in this line matching any of **regular expressions** in `re_list`.
+
+8. `rm_str_lines`: remove **a line** if any text fragments in this line matching any of **string** in `str_list`".
+
+9. `rm_str_seg`: remove **a segment** after matching any of **string** in `str_list` if any text fragments in this text are matched.
+
+10. `tra2sim`: convert Traditional Chinese to Simplified Chinese.
+
+11. `my_funcs`: other custom rules. You can set your custom rules in `./utils/utils/my_funcs.py` as functions and add the names of the functions into the setting files. 
 
 ### Deduplicator

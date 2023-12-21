@@ -17,16 +17,16 @@ def _split_into_chunks(works: list, pieces: int) -> list:
     pieces = max(1, pieces)
     return [works[i: i + pieces] for i in range(0, len(works), pieces)]
 
-def _process_single_text(text: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter) -> str:
+def _process_single_text(text: str, meta: dict, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter) -> str:
     '''
     Return "" (an empty string) means the text is Filtered.
     Else return an extracted and cleaned module
     '''
     text = extract_module.extract(text)
-    if filter_module.filter_single_text(text):
+    if filter_module.filter_single_text(text, meta):
         return ""
     text = clean_module.clean_single_text(text)
-    if filter_module.filter_single_text(text):
+    if filter_module.filter_single_text(text, meta):
         return ""    
     return text
 
@@ -45,16 +45,18 @@ def _process_single_work(work_path: str, output_path: str, modules: dict, text_k
     # do single work
     with open(ifile_path, mode='r', encoding='utf-8') as fr, open(ofile_path, mode='w', encoding='utf-8') as fw:
         for line in fr:
-            # try:
-            tot_cnt += 1
-            nrecord = json.loads(line)
-            text = _process_single_text(nrecord[text_key], extract_module, clean_module, filter_module)
-            if text != "":
-                nrecord['text'] = text
-                fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')
-            succ_cnt += 1
-            # except Exception as ne:
-            #     print(f'Exception for Bad File at {ifile_path} for {ne}\n')
+            try:
+                tot_cnt += 1
+                nrecord = json.loads(line)
+                meta = None if 'meta' not in nrecord.keys() else nrecord['meta']
+                text = _process_single_text(nrecord[text_key], meta, extract_module, clean_module, filter_module)
+                if text != "":
+                    nrecord['text'] = text
+                    fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')
+                succ_cnt += 1
+            except Exception as ne:
+                # continue
+                print(f'Exception for Bad File at {ifile_path} for {ne}\n')
     return (tot_cnt, succ_cnt)
 
 def process_parallel_works(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str):

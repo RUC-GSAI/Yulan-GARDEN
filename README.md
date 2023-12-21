@@ -14,7 +14,7 @@ First, install the requirement packages declared by `requirements.txt`.
 
 Modify settings/example.json on your desired processing procedure. The configuration file may contains many options. For example, if you want to use regular expressions to match some dirty tokens, you should add your own regular expressions into `re_list` of `rm_re_rules`. Also, make sure value of `use` of its father components (i.e. `rm_re_rules` and `if_clean`) are `true`. Similar modifications for other settings.
 
-Copy raw data to input_path in settings/example.json. And make sure the output_path not exists, otherwise the output path will be covered by temporary and output files.
+Copy raw data to input_path in `settings/example.json`. And make sure the output_path not exists, otherwise the output path will be covered by temporary and output files.
 
 ```{commandline}
 pip install -r requirements.txt
@@ -44,6 +44,8 @@ Debugger (`./utils/workers/debugger.py`) is a module to give a report (default p
 In `Filter` report, Debugger lists some values of hyperparameters and corresponding filter ratio for users to choose the appropriate values of hyperparameters according to a certain filter ratio. Make sure value of `use` of the filter rules (`debug_paras` in `settings.json`) are `true`.
 
 In `Cleaner` report, for each rule in Cleaner, Debugger includes the match ratio, which is number of successful matches divided by the total texts traversed by Debugger, the average execution time and some match cases. All of the information helps users judge whether the rule works in Cleaner. Make sure value of `use` of the cleaner rules (`clean_paras` in `settings.json`) are `true`.
+
+Besides, `debug_find_cases` helps developers find the texts which contain certain key words using the form of regular expressions. The report of `debug_find_cases` is in `Cleaner` report.
 
 ### Extractor
 

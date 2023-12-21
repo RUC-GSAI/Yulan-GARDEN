@@ -3,10 +3,30 @@ import re
 import numpy as np
 import json
 import time
+import logging
 from datetime import datetime
 
-def log_text(text: str, desc: str="LOG"):
-    print(f"[{desc}, {datetime.now()}]: ", text)
+
+
+def log_text(text: str, desc: str="info"):
+    logger = logging.getLogger("Dubug Logger")
+    logger.setLevel(logging.INFO)
+    console_handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    if desc.lower() == 'info':
+        logger.info(text)
+    elif desc.lower() == 'debug':
+        logger.debug(text)
+    elif desc.lower() == 'warning':
+        logger.warning(text)
+    elif desc.lower() == 'error':
+        logger.error(text)
+    elif desc.lower() == 'critical':
+        logger.error(text)
+    else:
+        raise Exception(f"illegal mode {desc} in func log_text()...")
 
 def binary_search(array_list: list, find: float, left: int, right: int) -> list:
     '''
@@ -49,6 +69,8 @@ class Debugger():
         self.debug_paras = setting['debug_paras']
         self.debug_report_path = self.debug_paras['debug_report_path']
         self.debug_short_texts = self.debug_paras['debug_short_texts']
+        # 'debug_find_cases' is regarded as a cleaner method
+        self.debug_find_cases = self.debug_paras['debug_find_cases']
         if 'debug_cases_num' in self.debug_paras.keys(): self.cases_num = self.debug_paras['debug_cases_num']
         if 'debug_sample_num_per_file' in self.debug_paras.keys(): self.sample_num = self.debug_paras['debug_sample_num_per_file']
         if self.debug_short_texts['use']:
@@ -89,6 +111,17 @@ class Debugger():
             self.rm_re_rules = {}
             for rule in self.debug_rm_re_rules:
                 self.rm_re_rules[rule] = {'match ratio': 0, 'avg time': 0, 'cases': set()}
+        if self.debug_find_cases['use']:
+            self.debug_find_cases_words = self.debug_find_cases['words']
+            '''
+            'self.find_cases_words' is a dict including 3 parts:
+                'match ratio': the percentage of matching ratio (matching times / total texts)
+                'avg time': the average execute time (sum of execute time / total texts)
+                'cases': some matching examples
+            '''
+            self.find_cases_words = {}
+            for word in self.debug_find_cases_words:
+                self.find_cases_words[word] = {'match ratio': 0, 'avg time': 0, 'cases': set()}
         if self.clean_setting['sub_re_rules']['use']:
             self.debug_sub_re_rules = self.clean_setting['sub_re_rules']['re_dict']
             '''
@@ -107,6 +140,15 @@ class Debugger():
             self.rm_str_rules = {}
             for rule in self.debug_rm_str_rules:
                 self.rm_str_rules[rule] = {'match ratio': 0, 'avg time': 0}
+        if self.clean_setting['rm_str_seg']['use']:
+            self.debug_rm_str_seg = self.clean_setting['rm_str_seg']['str_list']
+            '''
+            'self.rm_str_seg' is a dict including 3 parts 
+            (similar to 'self.rm_re_rules')
+            '''
+            self.rm_str_seg = {}
+            for rule in self.debug_rm_str_seg:
+                self.rm_str_seg[rule] = {'match ratio': 0, 'avg time': 0, 'cases': set()}
 
     def debug_params_report(self) -> None:
         '''
@@ -196,12 +238,16 @@ class Debugger():
             self._debug_non_ch(text)
         if self.debug_short_lines['use']:
             self._debug_short_lines(text)
+        if self.debug_find_cases['use']:
+            self._debug_find_cases(text)
         if self.clean_setting['rm_re_rules']['use']:
             self._debug_rm_re_rules(text)
         if self.clean_setting['sub_re_rules']['use']:
             self._debug_sub_re_rules(text)
         if self.clean_setting['rm_str_rules']['use']:
             self._debug_rm_str_rules(text)
+        if self.clean_setting['rm_str_seg']['use']:
+            self._debug_rm_str_seg(text)
 
     def _filter_report(self):
         '''
@@ -222,63 +268,66 @@ class Debugger():
         dic_short_texts, dic_non_ch, dic_short_lines = {}, {}, {}
         info_short_texts, info_non_ch, info_short_lines = '', '', ''
         # short_texts
-        # if the user need a fixed filter ratio
-        if self.debug_short_texts['if_fix_fil_ratio']:
-            # binary search the parameter 
-            interval = binary_search(percentage_short_texts, self.debug_short_texts['exp_fil_ratio'], 1, self.debug_short_texts['length'])
-            # do not find suitable parameter
-            if len(interval) == 0:
-                info_short_texts = 'The expected filter ratio is smaller than 0 or larger than 1!'
+        if self.debug_short_texts['use']:
+            # if the user need a fixed filter ratio
+            if self.debug_short_texts['if_fix_fil_ratio']:
+                # binary search the parameter 
+                interval = binary_search(percentage_short_texts, self.debug_short_texts['exp_fil_ratio'], 1, self.debug_short_texts['length'])
+                # do not find suitable parameter
+                if len(interval) == 0:
+                    info_short_texts = 'The expected filter ratio is smaller than 0 or larger than 1!'
+                else:
+                    for i in interval:
+                        dic_short_texts[i] = '{:.2%}'.format(percentage_short_texts[i])
+                    if i == self.debug_short_texts['length']:
+                        info_short_texts = 'If you want more details about parameter \'short_texts\', please increase the value of settings[\'debug_paras\'][\'debug_short_texts\'][\'length\'] in settings.json.'
             else:
-                for i in interval:
-                    dic_short_texts[i] = '{:.2%}'.format(percentage_short_texts[i])
-                if i == self.debug_short_texts['length']:
+                for i in range(1, self.debug_short_texts['length']):
+                    if percentage_short_texts[i] > 0.01:
+                        dic_short_texts[i] = '{:.2%}'.format(percentage_short_texts[i])
+                        if percentage_short_texts[i] == 1:
+                            break
+                # The last element means the number of texts with length more than the largest number (including it).
+                if i == self.debug_short_texts['length'] - 1 and percentage_short_texts[i] < 1:
+                    i += 1
+                    dic_short_texts['>={}'.format(i)] = '{:.2%}'.format(percentage_short_texts[i])
                     info_short_texts = 'If you want more details about parameter \'short_texts\', please increase the value of settings[\'debug_paras\'][\'debug_short_texts\'][\'length\'] in settings.json.'
-        else:
-            for i in range(1, self.debug_short_texts['length']):
-                if percentage_short_texts[i] > 0.01:
-                    dic_short_texts[i] = '{:.2%}'.format(percentage_short_texts[i])
-                    if percentage_short_texts[i] == 1:
-                        break
-            # The last element means the number of texts with length more than the largest number (including it).
-            if i == self.debug_short_texts['length'] - 1 and percentage_short_texts[i] < 1:
-                i += 1
-                dic_short_texts['>={}'.format(i)] = '{:.2%}'.format(percentage_short_texts[i])
-                info_short_texts = 'If you want more details about parameter \'short_texts\', please increase the value of settings[\'debug_paras\'][\'debug_short_texts\'][\'length\'] in settings.json.'
         # non_ch
-        # if the user need a fixed filter ratio
-        if self.debug_non_ch['if_fix_fil_ratio']:
-            # binary search the parameter 
-            interval = binary_search(percentage_non_ch, self.debug_non_ch['exp_fil_ratio'], 1, 100)
-            # do not find suitable parameter
-            if len(interval) == 0:
-                info_non_ch = 'The expected filter ratio is smaller than 0 or larger than 1!'
+        if self.debug_non_ch['use']:
+            # if the user need a fixed filter ratio
+            if self.debug_non_ch['if_fix_fil_ratio']:
+                # binary search the parameter 
+                interval = binary_search(percentage_non_ch, self.debug_non_ch['exp_fil_ratio'], 1, 100)
+                # do not find suitable parameter
+                if len(interval) == 0:
+                    info_non_ch = 'The expected filter ratio is smaller than 0 or larger than 1!'
+                else:
+                    for i in interval:
+                        dic_non_ch['[{}%, {}%)'.format(100-i, 101-i)] = '{:.2%}'.format(percentage_non_ch[i])
             else:
-                for i in interval:
-                    dic_non_ch['[{}%, {}%)'.format(100-i, 101-i)] = '{:.2%}'.format(percentage_non_ch[i])
-        else:
-            for i in range(1, 100 + 1):
-                if percentage_non_ch[i] > 0.01:
-                    dic_non_ch['[{}%, {}%)'.format(100-i, 101-i)] = '{:.2%}'.format(percentage_non_ch[i])
-                    if percentage_non_ch[i] == 1:
-                        break
+                for i in range(1, 100 + 1):
+                    if percentage_non_ch[i] > 0.01:
+                        dic_non_ch['[{}%, {}%)'.format(100-i, 101-i)] = '{:.2%}'.format(percentage_non_ch[i])
+                        if percentage_non_ch[i] == 1:
+                            break
         # short_lines
-        # if the user need a fixed filter ratio
-        if self.debug_short_lines['if_fix_fil_ratio']:
-            # binary search the parameter 
-            interval = binary_search(percentage_short_lines, self.debug_short_lines['exp_fil_ratio'], 1, 100)
-            # do not find suitable parameter
-            if len(interval) == 0:
-                info_short_lines = 'The expected filter ratio is smaller than 0 or larger than 1!'
+        if self.debug_short_lines['use']:
+            # if the user need a fixed filter ratio
+            if self.debug_short_lines['if_fix_fil_ratio']:
+                # binary search the parameter 
+                interval = binary_search(percentage_short_lines, self.debug_short_lines['exp_fil_ratio'], 1, 100)
+                # do not find suitable parameter
+                if len(interval) == 0:
+                    info_short_lines = 'The expected filter ratio is smaller than 0 or larger than 1!'
+                else:
+                    for i in interval:
+                        dic_short_lines['[{}%, {}%)'.format(100-i, 101-i)] = '{:.2%}'.format(percentage_short_lines[i])
             else:
-                for i in interval:
-                    dic_short_lines['[{}%, {}%)'.format(100-i, 101-i)] = '{:.2%}'.format(percentage_short_lines[i])
-        else:
-            for i in range(1, 100 + 1):
-                if percentage_short_lines[i] > 0.01:
-                    dic_short_lines['[{}%, {}%)'.format(100-i, 101-i)] = '{:.2%}'.format(percentage_short_lines[i])
-                    if percentage_short_lines[i] == 1:
-                        break
+                for i in range(1, 100 + 1):
+                    if percentage_short_lines[i] > 0.01:
+                        dic_short_lines['[{}%, {}%)'.format(100-i, 101-i)] = '{:.2%}'.format(percentage_short_lines[i])
+                        if percentage_short_lines[i] == 1:
+                            break
                 
         data = {'short_texts': {'info': info_short_texts, 'param: filter ratio': dic_short_texts}, 'non_ch': {'info': info_non_ch, 'param: filter ratio': dic_non_ch}, 'short_lines': {'info': info_short_lines, 'param: filter ratio': dic_short_lines}}
         return data
@@ -287,6 +336,12 @@ class Debugger():
         '''
         generate filter report and return the report
         '''
+        if self.debug_find_cases['use']:
+            for word in self.debug_find_cases_words:
+                self.find_cases_words[word]['match ratio'] = '{:.2%}'.format(self.find_cases_words[word]['match ratio']/self.total_texts)
+                self.find_cases_words[word]['avg time'] = '{:.5f} * 10^-4 s'.format(10000*self.find_cases_words[word]['avg time']/self.total_texts)
+        else:
+            self.find_cases_words = None
         if self.clean_setting['rm_re_rules']['use']:
             for rule in self.debug_rm_re_rules:
                 self.rm_re_rules[rule]['match ratio'] = '{:.2%}'.format(self.rm_re_rules[rule]['match ratio']/self.total_texts)
@@ -305,14 +360,29 @@ class Debugger():
                 self.rm_str_rules[rule]['avg time'] = '{:.5f} * 10^-4 s'.format(10000*self.rm_str_rules[rule]['avg time']/self.total_texts)
         else:
             self.rm_str_rules = None
+        if self.clean_setting['rm_str_seg']['use']:
+            for rule in self.debug_rm_str_seg:
+                self.rm_str_seg[rule]['match ratio'] = '{:.2%}'.format(self.rm_str_seg[rule]['match ratio']/self.total_texts)
+                self.rm_str_seg[rule]['avg time'] = '{:.5f} * 10^-4 s'.format(10000*self.rm_str_seg[rule]['avg time']/self.total_texts)
+        else:
+            self.rm_str_seg = None
+
         # Object of type 'set' is not JSON serializable
+        if self.debug_find_cases['use']:
+            for word in self.debug_find_cases_words:
+                self.find_cases_words[word]['cases'] = list(self.find_cases_words[word]['cases'])
         if self.clean_setting['rm_re_rules']['use']:
             for rule in self.debug_rm_re_rules:
                 self.rm_re_rules[rule]['cases'] = list(self.rm_re_rules[rule]['cases'])
         if self.clean_setting['sub_re_rules']['use']:
             for rule, _ in self.debug_sub_re_rules.items():
                 self.sub_re_rules[rule]['cases'] = list(self.sub_re_rules[rule]['cases'])
-        data = {'rm_re_rules': self.rm_re_rules, 'sub_re_rules': self.sub_re_rules, 'rm_str_rules': self.rm_str_rules}
+        if self.clean_setting['rm_str_seg']['use']:
+            for rule in self.debug_rm_str_seg:
+                self.rm_str_seg[rule]['cases'] = list(self.rm_str_seg[rule]['cases'])
+
+        
+        data = {'find_cases': self.find_cases_words, 'rm_re_rules': self.rm_re_rules, 'sub_re_rules': self.sub_re_rules, 'rm_str_rules': self.rm_str_rules, 'rm_str_seg': self.rm_str_seg}
         return data
 
 
@@ -350,6 +420,22 @@ class Debugger():
             self.short_lines[100] += 1
         else:
             self.short_lines[short_lines] += 1
+
+    def _debug_find_cases(self, text: str) -> None:
+        '''
+        Modify 'self.find_cases_words' according to the matching times, the execute time, matching examples.
+        '''
+        for word in self.debug_find_cases_words:
+            re_obj = re.search(pattern=word, string=text)
+            if re_obj != None:
+                self.find_cases_words[word]['match ratio'] += 1
+                if len(self.find_cases_words[word]['cases']) < self.cases_num:
+                    self.find_cases_words[word]['cases'].add(text)
+            # start = time.time()
+            self.find_cases_words[word]['avg time'] -= time.time()
+            re.sub(pattern=word, repl='', string=text)
+            # end = time.time()
+            self.find_cases_words[word]['avg time'] += time.time()
 
     def _debug_rm_re_rules(self, text: str) -> None:
         '''
@@ -398,4 +484,21 @@ class Debugger():
             text.replace(rule, '')
             # end = time.time()
             self.rm_str_rules[rule]['avg time'] += time.time()
+
+    def _debug_rm_str_seg(self, text: str) -> None:
+        '''
+        Modify 'self.rm_str_seg' according to the matching times, the execute time, matching examples.
+        '''
+        for rule in self.debug_rm_str_seg:
+            # self.rm_str_rules[rule] = {'match ratio': 0, 'avg time': 0, 'cases': []}
+            tmp = text.find(rule)
+            if tmp != -1:
+                self.rm_str_seg[rule]['match ratio'] += 1
+                if len(self.rm_str_seg[rule]['cases']) < self.cases_num:
+                    self.rm_str_seg[rule]['cases'].add(text[tmp:])
+            # start = time.time()
+            self.rm_str_seg[rule]['avg time'] -= time.time()
+            text = text[0: text.find(rule)]
+            # end = time.time()
+            self.rm_str_seg[rule]['avg time'] += time.time()
 

@@ -62,7 +62,9 @@ class Filter:
                     return True
         
         if self.fil_short_lines['use']:
-            if self._fil_short_lines(text, self.fil_short_lines['param']):
+            if self._fil_short_lines(text, 
+                                     threshold=self.fil_short_lines['param'], 
+                                     lower_bound=self.fil_short_lines['lower_bound']):
                 if outInfo:
                     print('Too many short lines.')
                 return True
@@ -105,9 +107,13 @@ class Filter:
         '''
         if the ratio of non Chinese characters more than 'non_ch', 
         return True (filter this text)
+
+        Author: @Emanual20
+        Last Modified: 2023/11/22
+        Modified Target: Laplace Smooth by 1e-6 to solve edge case if 'divided by zero' 
         '''
         find = re.findall(r'[^\u4e00-\u9fa5]|[a-zA-Z0-9]', text)                
-        return len(find) / len(text) >= non_ch
+        return len(find) / (len(text) + 1e-6) >= non_ch
     
     def _fil_copyright_ch(self, text: str, word: str) -> bool:      
         '''
@@ -123,13 +129,17 @@ class Filter:
         '''      
         return re.search(word, text, re.I)
 
-    def _fil_short_lines(self, text: str, threshold: float) -> bool:
+    def _fil_short_lines(self, text: str, threshold: float, lower_bound: int = 3) -> bool:
         '''
-        if the ratio of short line (less than 3 words) more than 'threshold',
+        if the ratio of short line (less than {lower_bound} words) more than 'threshold',
         return True (filter this text)
+
+        Author: @Emanual20
+        Last Modified: 2023/11/22
+        Modified Target: Laplace Smooth by 1e-6 to solve edge case if 'divided by zero' 
         '''   
         splits = text.split('\n')
-        res = sum([1 for each in splits if len(each) > 0 and (len(re.findall(r'[\u4e00-\u9fa5]', each)) <= 3)]) / len(splits)
+        res = sum([1 for each in splits if len(each) > 0 and (len(re.findall(r'[\u4e00-\u9fa5]', each)) <= lower_bound)]) / (len(splits) + 1e-6)
         return res > threshold
         
     def _fil_meta(self, meta: dict, meta_dict: dict) -> bool:

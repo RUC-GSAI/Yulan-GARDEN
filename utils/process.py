@@ -20,27 +20,29 @@ def process_work_single_thread(work_path: str, output_path: str, extract_module:
         nwork_out = os.path.join(output_path, filename)
         log_text(f"work_in_path: {nwork_in}, work_out_path: {nwork_out}")
         assert(nwork_in != nwork_out)
-        try:
-            with open(nwork_in, mode='r', encoding='utf-8') as fr, open(nwork_out, mode='w', encoding='utf-8') as fw:
-                for line in fr:
-                    nrecord = json.loads(line)
-                    text = process_single_text(nrecord[text_key], extract_module, clean_module, filter_module)
-                    if text != "":
-                        nrecord['text'] = text
-                        fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')
-        except Exception as ne:
-            print(f"Bad work {nwork_in} for Exception {ne}")
+        # try:
+        with open(nwork_in, mode='r', encoding='utf-8') as fr, open(nwork_out, mode='w', encoding='utf-8') as fw:
+            for line in fr:
+                nrecord = json.loads(line)
+                meta = None if 'meta' not in nrecord.keys() else nrecord['meta']
+                # print(meta)
+                text = process_single_text(nrecord[text_key], meta, extract_module, clean_module, filter_module)
+                if text != "":
+                    nrecord['text'] = text
+                    fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')
+        # except Exception as ne:
+            # print(f"Bad work {nwork_in} for Exception {ne}")
 
-def process_single_text(text: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter) -> str:
+def process_single_text(text: str, meta: dict, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter) -> str:
     '''
     Return "" (an empty string) means the text is Filtered.
     Else return an extracted and cleaned module
     '''
     text = extract_module.extract(text)
-    if filter_module.filter_single_text(text):
+    if filter_module.filter_single_text(text, meta):
         return ""
     text = clean_module.clean_single_text(text)
-    if filter_module.filter_single_text(text):
+    if filter_module.filter_single_text(text, meta):
         return ""    
     return text
 
@@ -59,7 +61,7 @@ def process_work(conf: Settings):
                 output_path=work_path, 
                 input_ext=input_ext, 
                 source_tag=output_source_value,
-                n_process= parallel_paras['n_process'])
+                n_process=parallel_paras['n_process'])
         else:
             work_path = os.path.join(output_path, '.tmp')
             if input_ext in TXT_SUFFIX:
@@ -98,7 +100,6 @@ def process_work(conf: Settings):
         # generate debugger report
         if settings['if_debug']:
             debugger_worklist = prepare_works(work_path, input_ext='jsonl')
-            print(len(debugger_worklist))
             for file in debugger_worklist:
                 with open(file, mode='r', encoding='utf-8') as fr:
                     cnt = 0
@@ -109,7 +110,7 @@ def process_work(conf: Settings):
                         if cnt >= debugger_module.sample_num:
                             break
             debugger_module.debug_params_report()
-            log_text(f"generating debug report {debugger_module.debug_report_path} finish.")
+            log_text(f"generating debug report {debugger_module.debug_report_path} finish..")
 
         if settings['if_filter'] or settings['if_clean']:
             # do work and calculate work statistics

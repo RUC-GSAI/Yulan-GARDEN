@@ -16,13 +16,15 @@ def _calculate_work_count(works, input_ext: str) -> int:
         for work in works:
             work_count += int(os.popen('wc -l %s' % work).read().split()[0])
     elif input_ext in TXTXZ_SUFFIX:
-        work_count = 0
-        for work in works:
-            with lzma.open(work, mode='rb') as fr:
-                work_count += len(fr.readlines())
+        return len(works) * 10000
+        # work_count = 0
+        # for work in works:
+        #     with lzma.open(work, mode='rb') as fr:
+        #         work_count += len(fr.readlines())
     else:
         raise Exception(f"Invalid input extension {input_ext} is given in _calculate_work_count..\n")
     return work_count
+    
 
 def _prepare_tmp_files(input_ext: str, tmp_path: str, works: list, n_workers: int, work_count: int, source_tag: str):
     if not os.path.exists(tmp_path):
@@ -35,7 +37,7 @@ def _prepare_tmp_files(input_ext: str, tmp_path: str, works: list, n_workers: in
             cnt += 1
             try:
                 with open(work, mode='r', encoding='utf-8') as fr:
-                    res.append(fr.read())
+                    res.append({'text': fr.read(), 'source': source_tag})
             except Exception as ne:
                 continue
             if cnt >= tmp_file_line:
@@ -64,9 +66,9 @@ def _prepare_tmp_files(input_ext: str, tmp_path: str, works: list, n_workers: in
             try:
                 with lzma.open(work, mode='rb') as fr:
                     for line in fr:
-                        element = extract_text(line)
+                        element = extract_text(line, source_tag)
                         # if the element is None, ignore it
-                        if element == None:
+                        if element == None or element['text'] == None:
                             continue
                         cnt += 1
                         res.append(element)

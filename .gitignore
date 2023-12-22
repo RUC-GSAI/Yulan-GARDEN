@@ -4,3 +4,4 @@ __pycache__
 bash
 wechat_task
 test_files
+*.old

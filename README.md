@@ -63,9 +63,7 @@ Filter (`./utils/workers/filter.py`) is a module to filter the useless or sensit
 
 5. `fil_dirty_words`: dirty words.
 
-6. `fil_meta`: meta information. Filter texts if its meta information is not allowed in the corresponding meta id.
-
-7. `fil_my_rules`: other custom rules. To make ZHEM more flexible, you can set your custom rules in `./utils/utils/my_rules.py` as functions and add the names of the functions into the setting files.
+6. `fil_my_rules`: other custom rules. To make ZHEM more flexible, you can set your custom rules in `./utils/utils/my_rules.py` as functions and add the names of the functions into the setting files.
 
 
 All the hyperparamters are changable in the light of `Debugger`.

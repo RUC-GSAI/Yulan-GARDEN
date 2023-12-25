@@ -5,6 +5,11 @@ from utils.cleaner.rm_passage_newline import CleanerRemovePassageNewline
 from utils.cleaner.rm_passage_regexp import CleanerRemovePassageRegExp
 from utils.cleaner.rm_passage_segment import CleanerRemovePassageBySegment
 from utils.cleaner.rm_passage_text import CleanerRemovePassageText
+from utils.cleaner.sub_passage_email import CleanerSubstitutePassageEmail
+from utils.cleaner.sub_passage_idcard import CleanerSubstitutePassageIDCard
+from utils.cleaner.sub_passage_ip import CleanerSubstitutePassageIP
+from utils.cleaner.sub_passage_phone import CleanerSubstitutePassagePhone
 from utils.cleaner.sub_passage_regexp import CleanerSubstitutePassageRegExp
 from utils.cleaner.sub_passage_selfdefuncs import CleanerSubstitutePassageBySelfDefinedFunctions
+from utils.cleaner.sub_passage_url import CleanerSubstitutePassageURL
 from utils.cleaner.sub_passage_zhcn import CleanerSubstitutePassageSimplifiedChinese

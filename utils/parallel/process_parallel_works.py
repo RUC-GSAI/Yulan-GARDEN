@@ -17,16 +17,16 @@ def _split_into_chunks(works: list, pieces: int) -> list:
     pieces = max(1, pieces)
     return [works[i: i + pieces] for i in range(0, len(works), pieces)]
 
-def _process_single_text(text: str, meta: dict, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter) -> str:
+def _process_single_text(text: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter) -> str:
     '''
     Return "" (an empty string) means the text is Filtered.
     Else return an extracted and cleaned module
     '''
     text = extract_module.extract(text)
-    if filter_module.filter_single_text(text, meta):
+    if filter_module.filter_single_text(text):
         return ""
     text = clean_module.clean_single_text(text)
-    if filter_module.filter_single_text(text, meta):
+    if filter_module.filter_single_text(text):
         return ""    
     return text
 
@@ -48,8 +48,7 @@ def _process_single_work(work_path: str, output_path: str, modules: dict, text_k
             try:
                 tot_cnt += 1
                 nrecord = json.loads(line)
-                meta = None if 'meta' not in nrecord.keys() else nrecord['meta']
-                text = _process_single_text(nrecord[text_key], meta, extract_module, clean_module, filter_module)
+                text = _process_single_text(nrecord[text_key], extract_module, clean_module, filter_module)
                 if text != "":
                     nrecord['text'] = text
                     fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')

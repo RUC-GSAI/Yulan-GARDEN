@@ -1,4 +1,5 @@
 from utils.cleaner.cleaner_base import CleanerBase
+from utils.utils.my_funcs import *
 from zhconv import convert
 
 class CleanerSubstitutePassageBySelfDefinedFunctions(CleanerBase):

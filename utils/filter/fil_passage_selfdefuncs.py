@@ -1,4 +1,5 @@
 from utils.filter.filter_base import FilterBase
+from utils.utils.my_rules import *
 import re
 
 class FilterPassageBySelfDefinedFunctions(FilterBase):

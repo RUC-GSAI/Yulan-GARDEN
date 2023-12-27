@@ -7,27 +7,6 @@ import logging
 from datetime import datetime
 
 
-
-def log_text(text: str, desc: str="info"):
-    logger = logging.getLogger("Dubug Logger")
-    logger.setLevel(logging.INFO)
-    console_handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-    if desc.lower() == 'info':
-        logger.info(text)
-    elif desc.lower() == 'debug':
-        logger.debug(text)
-    elif desc.lower() == 'warning':
-        logger.warning(text)
-    elif desc.lower() == 'error':
-        logger.error(text)
-    elif desc.lower() == 'critical':
-        logger.error(text)
-    else:
-        raise Exception(f"illegal mode {desc} in func log_text()...")
-
 def binary_search(array_list: list, find: float, left: int, right: int) -> list:
     '''
     @params:

@@ -50,7 +50,7 @@ def _process_single_work(work_path: str, output_path: str, modules: dict, text_k
                 nrecord = json.loads(line)
                 text = _process_single_text(nrecord[text_key], extract_module, clean_module, filter_module)
                 if text != "":
-                    nrecord['text'] = text
+                    nrecord[text_key] = text
                     fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')
                 succ_cnt += 1
             except Exception as ne:

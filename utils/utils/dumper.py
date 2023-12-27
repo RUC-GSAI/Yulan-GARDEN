@@ -14,12 +14,10 @@ def dump_data2jsonl(path: str, data: list, keep_text_only=False, text_key="text"
     try:
         with open(path, mode=mode, encoding=encoding) as fw:
             for line in data:
-                if type(line) is str:
-                    ndic = {"text": line, "source": source_tag}
-                elif type(line) is dict:
-                    line["source"] = source_tag
+                if type(line) is dict:
                     if keep_text_only:
-                        ndic = {"text": line[text_key], "source": line["source"]}
+                        line["source"] = source_tag
+                        ndic = line
                     else:
                         ndic = line
                 else:
@@ -86,9 +84,9 @@ def dump_txtxz2jsonl(input_path, output_path, mode='w', encoding='utf-8', source
             with lzma.open(txtxz_work, mode='rb') as fr:
                 line = fr.readline()
                 while line:
-                    line = extract_text(line)
-                    if line is not None:
-                        fw.write(json.dumps({"text": line, "source": source_tag}, ensure_ascii=False) + '\n')
+                    line = extract_text(line, source_tag)
+                    if line is not None and line['text'] is not None:
+                        fw.write(json.dumps(line, ensure_ascii=False) + '\n')
                     line = fr.readline()
 
 def dump_jsonls2jsonl(input_path, output_path, keep_text_only=False, mode='w', encoding='utf-8', source_tag='.tmp') -> None:
@@ -104,12 +102,12 @@ def dump_jsonls2jsonl(input_path, output_path, keep_text_only=False, mode='w', e
                     for line in fr:
                         meta = json.loads(line)
                         if keep_text_only:
-                            meta = {"text": meta['text'], "source": source_tag}
+                            meta['source'] = source_tag
                         else:
                             if 'source' not in meta.keys(): meta['source'] = source_tag
                         fw.write(json.dumps(meta, ensure_ascii=False) + '\n')
 
-def extract_text(raw_page):
+def extract_text(raw_page, source_tag='.tmp'):
     decoded_page = raw_page.decode('gbk', errors='ignore')
     try:
         utf8_page = json.loads(decoded_page)
@@ -123,7 +121,6 @@ def extract_text(raw_page):
             filtered_spans.append(span)
         all_span_text = [_.get_text() for _ in filtered_spans]
         cleaned_content = '\n'.join(all_span_text)
-        # cleaned_content = soup.get_text(separator='\n', strip=True)
         # return {
         #     '_id': utf8_page['_id'],
         #     'url': utf8_page['url'],
@@ -131,6 +128,13 @@ def extract_text(raw_page):
         #     'ts': utf8_page['ts'],
         #     'content': cleaned_content
         # }
-        return cleaned_content
+        biz = utf8_page['url'].split('biz=')[1].split('&')[0]
+        return {
+            'text': cleaned_content,
+            'source': source_tag,
+            'meta': {
+                'biz': biz
+            }
+        }
     except:
         return None

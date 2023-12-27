@@ -26,7 +26,7 @@ def _calculate_work_count(works, input_ext: str) -> int:
     return work_count
     
 
-def _prepare_tmp_files(input_ext: str, tmp_path: str, works: list, n_workers: int, work_count: int, source_tag: str):
+def _prepare_tmp_files(input_ext: str, tmp_path: str, works: list, n_workers: int, work_count: int, source_tag: str, text_key: str = 'text'):
     if not os.path.exists(tmp_path):
         os.makedirs(tmp_path)
     tmp_file_line = int((work_count + n_workers) / n_workers)
@@ -54,12 +54,12 @@ def _prepare_tmp_files(input_ext: str, tmp_path: str, works: list, n_workers: in
                         cnt += 1
                         res.append(json.loads(line))
                         if cnt >= tmp_file_line:
-                            dump_data2jsonl(path=os.path.join(tmp_path, f'{split}.jsonl'), data=res, source_tag=source_tag, text_key="text")
+                            dump_data2jsonl(path=os.path.join(tmp_path, f'{split}.jsonl'), data=res, source_tag=source_tag, text_key=text_key)
                             cnt, res, split = 0, [], split + 1
             except Exception as ne:
                 print(f'bad file {work} for exception {ne}\n')
         if cnt > 0:
-            dump_data2jsonl(path=os.path.join(tmp_path, f'{split}.jsonl'), data=res, source_tag=source_tag, text_key="text")
+            dump_data2jsonl(path=os.path.join(tmp_path, f'{split}.jsonl'), data=res, source_tag=source_tag, text_key=text_key)
             cnt, res, split = 0, [], split + 1
     elif input_ext in TXTXZ_SUFFIX:
         for work in tqdm(works, desc="Generating .tmp files"):
@@ -73,7 +73,7 @@ def _prepare_tmp_files(input_ext: str, tmp_path: str, works: list, n_workers: in
                         cnt += 1
                         res.append(element)
                         if cnt >= tmp_file_line:
-                            dump_data2jsonl(path=os.path.join(tmp_path, f'{split}.jsonl'), data=res, source_tag=source_tag, text_key="text")
+                            dump_data2jsonl(path=os.path.join(tmp_path, f'{split}.jsonl'), data=res, source_tag=source_tag, text_key=text_key)
                             cnt, res, split = 0, [], split + 1
             except Exception as ne:
                 continue
@@ -83,10 +83,10 @@ def _prepare_tmp_files(input_ext: str, tmp_path: str, works: list, n_workers: in
     else:
         raise Exception(f"Unsupported extentsion type {source_tag} in _prepare_tmp_files..\n")
 
-def prepare_parallel_works(input_path, output_path, input_ext='jsonl', source_tag='.tmp', n_process=-1):
+def prepare_parallel_works(input_path, output_path, input_ext='jsonl', source_tag='.tmp', n_process=-1, text_key: str ='text'):
     works = prepare_works(input_path=input_path, input_ext=input_ext)
     # Calculate work count
     work_count = _calculate_work_count(works=works, input_ext=input_ext)
     # Split work into pieces
     n_workers = n_process - 1 if n_process < 1 else cpu_count() - 1
-    _prepare_tmp_files(input_ext=input_ext, tmp_path=output_path, works=works, n_workers=n_workers, work_count=work_count, source_tag=source_tag)
+    _prepare_tmp_files(input_ext=input_ext, tmp_path=output_path, works=works, n_workers=n_workers, work_count=work_count, source_tag=source_tag, text_key=text_key)

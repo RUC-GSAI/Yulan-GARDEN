@@ -124,6 +124,14 @@
             "target": "zh-cn"
         }
     },
+    "if_dedup": true,
+    "dedup_paras": {
+        "language": "zh",
+        "ngram": 5,
+        "num_perm": 128,
+        "min_length": 20,
+        "threshold": 0.7
+    },
     "if_parallel": true,
     "parallel_paras": {
         "comments": "it means if the input data is already cut into pieces",

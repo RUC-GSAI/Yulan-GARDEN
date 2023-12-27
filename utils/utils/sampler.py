@@ -1,11 +1,16 @@
 import json
 import random
-import logging
 import os
+import logging
 import numpy as np
+import matplotlib.pyplot as plt
 
 from typing import TypedDict
 from tqdm import tqdm
+
+# from utils.utils.logger import Logger
+
+textkey = 'Content'
 
 class SampleConfig(TypedDict):
     input_path: str = ""
@@ -37,6 +42,8 @@ class Sampler():
             self.SAMPLE_BY_LENGTH_PROPORTION = sample_config.get("SAMPLE_BY_LENGTH_PROPORTION", 10)
 
         self.logger = logging.getLogger("Sampler_Logger")
+        file_handler = logging.FileHandler("process.log")
+        self.logger.addHandler(file_handler)
         self.logger.setLevel(logging.INFO)
         console_handler = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -62,14 +69,33 @@ class Sampler():
                     break
         self.logger.info(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines into {os.path.join(self.output_path, 'random.jsonl')}..")
 
+    def gen_length_statistic(self, len_list: list):
+        mean = np.mean(len_list)
+        std_deviation = np.std(len_list)
+        quartiles = np.percentile(len_list, [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]) 
+
+        print("mean:", mean)
+        print("std:", std_deviation)
+        print("quartiles:", quartiles)
+
+    def gen_length_histogram(self, len_list: list):
+        import seaborn as sns
+        sns.displot(len_list)
+
+        # hist, bins = np.histogram(len_list, bins = 20)
+        # plt.hist(len_list, bins=20)
+        plt.savefig('./1.png')
+
     def calc_length_threshold(self):
         len_arr = []
         with open(self.input_path, mode='r', encoding='utf-8') as fr:
             for line in tqdm(fr, desc='calc_length_threshold'):
                 ndata = json.loads(line)
-                len_arr.append(len(ndata['text']))
+                len_arr.append(len(ndata[textkey]))
 
         len_arr = sorted(len_arr, reverse=False)
+        self.gen_length_statistic(len_arr)
+        self.gen_length_histogram(len_arr)
         assert len(len_arr) >= self.SAMPLE_BY_LENGTH_NUM * self.SAMPLE_BY_LENGTH_PROPORTION * 2
         return len_arr[self.SAMPLE_BY_LENGTH_NUM * self.SAMPLE_BY_LENGTH_PROPORTION], len_arr[-self.SAMPLE_BY_LENGTH_NUM * self.SAMPLE_BY_LENGTH_PROPORTION]
 
@@ -81,7 +107,7 @@ class Sampler():
         with open(self.input_path, mode='r', encoding="utf-8") as fr, open(os.path.join(self.output_path, 'short.jsonl'), mode='w') as fw:
             cnt = 0
             for line in fr:
-                cur_len = len(json.loads(line)['text'])
+                cur_len = len(json.loads(line)[textkey])
                 if cur_len <= short_threshold:
                     if random.random() <= 1 / self.SAMPLE_BY_LENGTH_PROPORTION:
                         fw.write(line)
@@ -95,7 +121,7 @@ class Sampler():
         with open(self.input_path, mode='r', encoding="utf-8") as fr, open(os.path.join(self.output_path, 'long.jsonl'), mode='w') as fw:
             cnt = 0
             for line in fr:
-                cur_len = len(json.loads(line)['text'])
+                cur_len = len(json.loads(line)[textkey])
                 if cur_len >= long_threshold:
                     if random.random() <= 1 / self.SAMPLE_BY_LENGTH_PROPORTION:
                         fw.write(line)
@@ -115,11 +141,11 @@ if __name__ == '__main__':
     # sampleconfig["input_path"] = "/fs/archive/share/u2022101014/chinesewebtext/filtered/hot_20000_cleaned_v4.jsonl"
     # sampleconfig["input_path"] = "/fs/archive/share/u2022101014/baike_triple/10.jsonl"
     # sampleconfig["output_path"] = "/home/u2022101014/ZHEM/utils/test_files/texts/cleaned_old"
-    sampleconfig["input_path"] = "/fs/archive/share/u2022101014/MNBVC_CN/archived/wikihow_prompted_cleaned.jsonl"
-    sampleconfig["output_path"] = "/fs/archive/share/u2022101014/MNBVC_CN/sampled"
+    sampleconfig["input_path"] = "/fs/archive/share/u2022101014/ZWJCYLK/ZWJCYLK-3/29.json"
+    sampleconfig["output_path"] = "/fs/archive/share/u2022101014/ZWJCYLK/sampled"
     sampleconfig["SAMPLE_RANDOMLY_NUM"] = 500
-    sampleconfig["if_sample_by_length"] = False
-    sampleconfig["SAMPLE_BY_LENGTH_NUM"] = 100
+    sampleconfig["if_sample_by_length"] = True
+    sampleconfig["SAMPLE_BY_LENGTH_NUM"] = 250
 
     sampler = Sampler(sampleconfig)
     sampler.do_sample()

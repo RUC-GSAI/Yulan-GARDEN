@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+</head>
+
+<style>
+    .indent2 {
+        padding-left: 2ch;
+    }
+    .indent4 {
+        padding-left: 4ch;
+    }
+    .indent6 {
+        padding-left: 6ch;
+    }
+    .inline-title {
+        display: inline-block;
+    }
+</style>
+
+<body>
+    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+
+    <!-- page: select an existing config -->
+
+    <details>
+        <summary><span class="inline-title"><h3>customize a config</h3></span></summary>
+        <!-- <summary><h3>customize a config</h3></summary> -->
+        <form method="POST" action="/show_config">
+            <!-- 在这里添加各个参数的输入框 -->
+            <label for="custom_config">config name</label>
+            <input type="text" id="custom_config" name="custom_config" required><br><br>
+            
+            <!-- 嵌套定义的字典 第一层-->
+            {% for parameter1, definition1 in parameter_definitions.items() %}
+                <label for="{{ parameter1 }}">{{ parameter1 }}:</label>
+                {% if parameter1.startswith('if') or parameter3 == 'use' %}
+                    <select id="{{ parameter1 }}" name="{{ parameter1 }}">
+                        <option value="">-- true/false --</option>
+                        <option value=true>true</option>
+                        <option value="">false</option>
+                    </select><br><br>
+                {% elif definition1 is string %}
+                    <input type="text" id="{{ parameter1 }}" name="{{ parameter1 }}" placeholder="{{ definition1 }}"><br><br>            
+                <!-- 嵌套定义的字典 第二层-->
+                {% elif definition1|is_dict %}
+                    <br><br>
+                    <div class="indent2">
+                        {% for parameter2, definition2 in definition1.items() %}
+                            <label for="{{ parameter2 }}">{{ parameter2 }}:</label>
+                            {% if parameter2 == 'comments' %}
+                                {{ definition2 }}<br><br>
+                            {% elif parameter2.startswith('if') or parameter3 == 'use' %}
+                                <select id="{{ parameter2 }}" name="{{ parameter1 }}.{{ parameter2 }}">
+                                    <option value="">-- true/false --</option>
+                                    <option value=true>true</option>
+                                    <option value="">false</option>
+                                </select><br><br>
+                            {% elif definition2 is string or definition2 is number %}
+                                <input type="text" id="{{ parameter2 }}" name="{{ parameter1 }}.{{ parameter2 }}" placeholder="{{ definition2 }}"><br><br>                        
+                            <!-- 嵌套定义的字典 第三层-->
+                            {% elif definition2|is_dict %}
+                                <br><br>
+                                <div class="indent4">
+                                    {% for parameter3, definition3 in definition2.items() %}
+                                        <label for="{{ parameter3 }}">{{ parameter3 }}:</label>
+                                        {% if parameter3 == 'comments' %}
+                                            {{ definition3 }}<br><br>
+                                        {% elif parameter3.startswith('if') or parameter3 == 'use' %}
+                                            <select id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}">
+                                                <option value="">-- true/false --</option>
+                                                <option value=true>true</option>
+                                                <option value="">false</option>
+                                            </select><br><br>
+                                        {% elif definition3 is string or definition3 is number %}
+                                            <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="string{{ definition3 }}"><br><br>
+                                        {% elif definition3|is_dict %}
+                                            <!-- 特殊处理extractor.mode -->
+                                            {% if parameter3 == 'mode' %}                                        
+                                            <br><br>
+                                            <div class="indent6">
+                                                {% for parameter4, definition4 in definition3.items() %}
+                                                    <label for="{{ parameter4 }}">{{ parameter4 }}:</label>                                                
+                                                    {% if definition4 is boolean %}
+                                                        <select id="{{ parameter4 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}.{{parameter4}}">
+                                                            <option value="">-- true/false --</option>
+                                                            <option value=true>true</option>
+                                                            <option value="">false</option>
+                                                        </select><br><br>                                                
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="key-value pairs, example: key1:value1;key2:value2"><br><br>
+                                        {% elif definition3|is_list %}                                        
+                                            <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="list of values, example: value1, value2, value3"><br><br>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                {% endif %}
+            {% endfor %}
+            
+            <input type="submit" value="保存配置文件">
+        </form>
+    </details>
+
+    <!-- return to index page -->
+    <form action="/" method="post">
+        <input type="submit" value="return to the home page">
+    </form>
+</body>
+</html>

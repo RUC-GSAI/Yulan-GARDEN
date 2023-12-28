@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+</head>
+
+
+<body>
+    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+
+    <!-- submit task -->
+    <form action="/retriever" method="post">
+        <input type="text" name="key_words" placeholder="key words (split by a blank space)" required>
+        <input type="submit" id="retreve_task" name="retreve_task" value="retreve" ><br>
+    </form>
+
+    {% if texts %}
+    <table>    
+        {% for text in texts %}
+            <tr>
+                <td>{{ text }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <br>
+    {% if source == 'input_path' %}
+        <!-- return to show_config page -->
+        <form action="/show_config" method="post">
+            <input type="submit" name="retrever_back" value="return">
+        </form>
+    {% elif source == 'output_path' %}
+        <!-- return to show_config page -->
+        <form action="/processing" method="post">
+            <input type="submit" name="retrever_back" value="return">
+        </form>
+    {% endif %}
+    <br>
+
+</body>
+</html>

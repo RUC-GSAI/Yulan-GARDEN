@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+</head>
+
+
+<body>
+    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+
+
+    <!-- submit task -->
+    <form action="/processing" method="post">
+        <!-- <input type="submit" value="提交任务"> -->
+        <!-- <label for="custom_config_file">配置文件名：</label> -->
+        <input type="submit" id="submit_task" name="submit_task" value="submit the task" required><br><br>
+        <!-- <button id="runButton">提交任务</button> -->
+    </form>
+
+    <!-- retriever task -->
+    <form action="/retriever" method="post">
+        <!-- <input type="submit" value="提交任务"> -->
+        <!-- <label for="custom_config_file">配置文件名：</label> -->
+        <input type="submit" id="submit_task" name="submit_task" value="retreve" ><br><br>
+        <!-- <button id="runButton">提交任务</button> -->
+    </form>
+
+    <!-- return to index page -->
+    <form action="/" method="post">
+        <input type="submit" value="return to the home page">
+    </form>
+    <br>
+
+    <details>
+        <summary>details of config file</summary>
+            {% if config|safe %}
+                <pre>{{config|safe}}</pre>
+            {% endif %}
+    </details>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+</head>
+
+
+<body>
+    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+
+
+    <form method="POST" action="/processing">
+        <!-- first time: no ret_args, display the button; 
+            second time: process is finished, not display the button -->
+        {% if not ret_args %}
+            <input type="submit" id="confirm" style="display: inline;" name="confirm" value="confirm" required>
+        {% endif %}
+        <span id="waiting" style="display: none;">
+            <h2>Processing... Please wait patiently.</h2>
+            <div id="log-content"></div>
+        </span>
+    </form>
+  
+    
+    <script>
+        document.getElementById("confirm").addEventListener("click", function() {
+            document.getElementById("confirm").style.display = "none";
+            document.getElementById("waiting").style.display = "inline";
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/read_log", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    document.getElementById("log-content").innerText = xhr.responseText;
+                    document.getElementById("confirm").disabled = false; // 启用按钮
+                }
+            };
+            xhr.send();
+
+            setInterval(function() {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/read_log", true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                        document.getElementById("log-content").innerText = xhr.responseText;
+                    }
+                };
+                xhr.send();
+            }, 500);
+        });
+    </script>
+
+
+    {% if ret_args %}
+        <h2>Successful!</h2>
+        {% if ret_args['if_debug'] %}
+            <h3>debug file path: {{ret_args['debug_path']}}</h3>
+            <details>
+                <summary>details of debug file</summary>
+                    <pre>{{ret_args['debug_file']}}</pre>
+            </details>
+        {% endif %}
+    {% endif %}
+
+    {% if sample_results %}
+        <h2>Examples</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>origin texts</th>
+                    <th>refined texts</th>
+                    <!-- <th>differences</th> -->
+                </tr>
+            </thead>
+        
+            {% for row in sample_results %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <!-- retriever task -->
+        <form action="/retriever" method="post">
+            <!-- <input type="submit" value="提交任务"> -->
+            <!-- <label for="custom_config_file">配置文件名：</label> -->
+            <input type="submit" id="submit_task" name="submit_task" value="retreve" >
+            <!-- <button id="runButton">提交任务</button> -->
+        </form>
+    {% endif %}
+    <br>
+    <!-- return to index page -->
+    <form action="/" method="post">
+        <input type="submit" value="return to the home page">
+    </form>
+
+</body>
+</html>

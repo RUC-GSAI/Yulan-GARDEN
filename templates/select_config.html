@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+</head>
+
+
+<body>
+    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+
+    <!-- page: select an existing config -->
+
+    <h3>select a config</h3>
+    <form method="POST" action="/show_config">
+        <select name="select_config">
+            <option value="">-- Please choose a config file --</option>
+            {% for file in settings_files %}
+                <option value="{{ file }}">{{ file }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="load the config">
+    </form><br>
+
+    <!-- return to index page -->
+    <form action="/" method="post">
+        <input type="submit" value="return to the home page">
+    </form>
+</body>
+</html>

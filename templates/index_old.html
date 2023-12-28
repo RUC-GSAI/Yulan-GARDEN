@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+</head>
+
+<style>
+    .indent2 {
+        padding-left: 2ch;
+    }
+    .indent4 {
+        padding-left: 4ch;
+    }
+    .indent6 {
+        padding-left: 6ch;
+    }
+</style>
+
+<body>
+    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+    <h2>Please select your config type: </h2>
+
+    <!-- The home page only have 2 buttons -->
+
+    <form method="POST" action="/select_config">
+        <input type="submit" value="select an existing config">
+    </form>
+
+    <form method="POST" action="/customize_config">
+        <input type="submit" value="customize an config">
+    </form>
+
+
+    <!-- page: select an existing config -->
+
+    <h3>选择已有配置文件：</h3>
+    <form method="POST" action="/">
+        <select name="select_config">
+            <option value="">-- 请选择一个配置文件 --</option>
+            {% for file in settings_files %}
+                <option value="{{ file }}">{{ file }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="加载配置文件">
+    </form>
+
+    <!-- 提交任务按钮 1 -->
+    <form action="/submit_task" method="post">
+        <input type="submit" value="提交任务">
+    </form>
+
+    <h3>创建自定义配置文件：</h3>
+    <form method="POST" action="/">
+        <!-- 在这里添加各个参数的输入框 -->
+        <label for="custom_config_file">配置文件名：</label>
+        <input type="text" id="custom_config_file" name="custom_config_file" required><br><br>
+        
+        <!-- 嵌套定义的字典 第一层-->
+        {% for parameter1, definition1 in parameter_definitions.items() %}
+            <label for="{{ parameter1 }}">{{ parameter1 }}:</label>
+            {% if parameter1.startswith('if') or parameter3 == 'use' %}
+                <select id="{{ parameter1 }}" name="{{ parameter1 }}">
+                    <option value="">-- boolean请选择true或false --</option>
+                    <option value=true>true</option>
+                    <option value="">false</option>
+                </select><br><br>
+            {% elif definition1 is string %}
+                <input type="text" id="{{ parameter1 }}" name="{{ parameter1 }}" placeholder="{{ definition1 }}"><br><br>            
+            <!-- 嵌套定义的字典 第二层-->
+            {% elif definition1|is_dict %}
+                <br><br>
+                <div class="indent2">
+                    {% for parameter2, definition2 in definition1.items() %}
+                        <label for="{{ parameter2 }}">{{ parameter2 }}:</label>
+                        {% if parameter2 == 'comments' %}
+                            {{ definition2 }}<br><br>
+                        {% elif parameter2.startswith('if') or parameter3 == 'use' %}
+                            <select id="{{ parameter2 }}" name="{{ parameter1 }}.{{ parameter2 }}">
+                                <option value="">-- boolean请选择true或false --</option>
+                                <option value=true>true</option>
+                                <option value="">false</option>
+                            </select><br><br>
+                        {% elif definition2 is string or definition2 is number %}
+                            <input type="text" id="{{ parameter2 }}" name="{{ parameter1 }}.{{ parameter2 }}" placeholder="{{ definition2 }}"><br><br>                        
+                        <!-- 嵌套定义的字典 第三层-->
+                        {% elif definition2|is_dict %}
+                            <br><br>
+                            <div class="indent4">
+                                {% for parameter3, definition3 in definition2.items() %}
+                                    <label for="{{ parameter3 }}">{{ parameter3 }}:</label>
+                                    {% if parameter3 == 'comments' %}
+                                        {{ definition3 }}<br><br>
+                                    {% elif parameter3.startswith('if') or parameter3 == 'use' %}
+                                        <select id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}">
+                                            <option value="">-- boolean请选择true或false --</option>
+                                            <option value=true>true</option>
+                                            <option value="">false</option>
+                                        </select><br><br>
+                                    {% elif definition3 is string or definition3 is number %}
+                                        <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="string{{ definition3 }}"><br><br>
+                                    {% elif definition3|is_dict %}
+                                        <!-- 特殊处理extractor.mode -->
+                                        {% if parameter3 == 'mode' %}                                        
+                                        <br><br>
+                                        <div class="indent6">
+                                            {% for parameter4, definition4 in definition3.items() %}
+                                                <label for="{{ parameter4 }}">{{ parameter4 }}:</label>                                                
+                                                {% if definition4 is boolean %}
+                                                    <select id="{{ parameter4 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}.{{parameter4}}">
+                                                        <option value="">-- boolean请选择true或false --</option>
+                                                        <option value=true>true</option>
+                                                        <option value="">false</option>
+                                                    </select><br><br>                                                
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="dict多个键值对，用英文分号分隔，键值之间使用英文冒号"><br><br>
+                                    {% elif definition3|is_list %}                                        
+                                        <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="list输入多个值，用空格分隔"><br><br>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+            {% endif %}
+        {% endfor %}
+        
+        <input type="submit" value="保存配置文件">
+    </form>
+
+    <!-- 提交任务按钮 2 -->
+    <form action="/submit_task" method="post">
+        <input type="submit" value="提交任务">
+    </form>
+
+    {% if config|safe %}
+    <h3>当前配置信息：</h3>
+    <pre>{{config}}</pre>
+    {% endif %}
+</body>
+</html>

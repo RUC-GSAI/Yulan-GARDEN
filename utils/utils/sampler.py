@@ -25,6 +25,7 @@ class Sampler():
     def __init__(self, sample_config: SampleConfig=None):
         self.input_path = ""
         self.output_path = ""
+        self.output_to_file = True
         self.if_sample_randomly = True
         self.SAMPLE_RANDOMLY_NUM = 100
         self.SAMPLE_RANDOMLY_PROPORTION = 1.2
@@ -35,6 +36,7 @@ class Sampler():
         if sample_config is not None:
             self.input_path = sample_config.get("input_path", "")
             self.output_path = sample_config.get("output_path", "")
+            self.output_to_file = sample_config.get("output_to_file", True)
             self.if_sample_randomly = sample_config.get("if_sample_randomly", True)
             self.SAMPLE_RANDOMLY_NUM = sample_config.get("SAMPLE_RANDOMLY_NUM", 100)
             self.if_sample_by_length = sample_config.get("if_sample_by_length", False)
@@ -58,16 +60,27 @@ class Sampler():
 
     def sample_randomly(self) -> None:
         line_num = self._calculate_work_count(self.input_path)
+        ret = []
+
         self.logger.info(f"begin to sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines from {self.input_path}..")
+        
         with open(self.input_path, mode='r', encoding="utf-8") as fr, open(os.path.join(self.output_path, 'random.jsonl'), mode='w') as fw:
             cnt = 0
             for line in fr:
                 if random.random() <= self.SAMPLE_RANDOMLY_NUM / line_num * self.SAMPLE_RANDOMLY_PROPORTION:
-                    fw.write(line)
+                    if self.output_to_file:
+                        fw.write(line)
+                    else:
+                        ret.append(line)
                     cnt += 1
                 if cnt >= self.SAMPLE_RANDOMLY_NUM:
                     break
-        self.logger.info(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines into {os.path.join(self.output_path, 'random.jsonl')}..")
+        
+        if self.output_to_file:
+            self.logger.info(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines into {os.path.join(self.output_path, 'random.jsonl')}..")
+        else:
+            self.logger.info(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines..")
+            return ret
 
     def gen_length_statistic(self, len_list: list):
         mean = np.mean(len_list)

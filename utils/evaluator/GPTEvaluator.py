@@ -1,15 +1,14 @@
-      
+from utils.evaluator.evaluator_base import EvaluatorBase
+
 import time
 import json
 import os
 import openai
-from tqdm import tqdm
 from openai import OpenAI
 from tqdm import tqdm
 from collections import defaultdict
 
-
-class GPTEvaluator():
+class GPTEvaluator(EvaluatorBase):
     def __init__(self, api_keys: list = ["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"]):
         self.api_keys = api_keys
         self.OpenAIs = []
@@ -19,10 +18,6 @@ class GPTEvaluator():
         self.MAX_RETRY_LIMITS_PER_QUERY = max(3, len(self.OpenAIs))
         self.input_path = ""
         self.output_path = ""
-
-    def _now_timestamp(self) -> int:
-        from datetime import datetime
-        return int(datetime.now().timestamp())
     
     def _try_next_OpenAI(self):
         self.cur_OpenAIs_ptr = (self.cur_OpenAIs_ptr + 1) % len(self.OpenAIs)
@@ -32,7 +27,7 @@ class GPTEvaluator():
     def _get_cur_OpenAI(self):
         return self.OpenAIs[self.cur_OpenAIs_ptr]
 
-    def _evaluate_pairwase_singlepair(self, text1: str, text2: str, lang: str = "Chinese", model: str = "gpt-3.5-turbo-1106") -> int:
+    def evaluate_single_pair(self, text1: str, text2: str, lang: str = "Chinese", model: str = "gpt-3.5-turbo-1106") -> int:
         '''
         To compare {{text1}} with {{text2}} according to the text quality, toxicity by gpt-4(gpt-3.5-turbo).
 
@@ -69,7 +64,7 @@ Please only answer "Text 1" or "Text 2" or "Tied" without offering any explanati
                 self._try_next_OpenAI()
                 retry_cnt += 1
                 if retry_cnt >= self.MAX_RETRY_LIMITS_PER_QUERY:
-                    raise Exception(f"Tried {retry_cnt} times exceed the limit {self.MAX_RETRY_LIMITS_PER_QUERY} in function GPTEvaluator()._evaluate_pairwase_singlepair()")
+                    raise Exception(f"Tried {retry_cnt} times exceed the limit {self.MAX_RETRY_LIMITS_PER_QUERY} in function GPTEvaluator().evaluate_single_pair()")
             else:
                 break
 
@@ -94,7 +89,7 @@ Please only answer "Text 1" or "Text 2" or "Tied" without offering any explanati
         cnt_dict = defaultdict(int)
         with open(os.path.join(self.output_path, f"pairwise_report_{self._now_timestamp()}.jsonl"), mode='w', encoding='utf-8') as fw:
             for each in tqdm(text_pair_lis):
-                answer, result = self._evaluate_pairwase_singlepair(
+                answer, result = self.evaluate_single_pair(
                     text1 = each['text1'],
                     text2 = each['text2'],
                     lang = each['lang']

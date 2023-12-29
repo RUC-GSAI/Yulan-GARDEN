@@ -20,6 +20,14 @@
                 
             ]
         },
+        "fil_langs": {
+            "use": false,
+            "accept_lang_list": ["en", "zh"]
+        },
+        "fil_lang_score": {
+            "use": false,
+            "reject_threshold": 0.5
+        },
         "fil_short_texts": {
             "use" : false,
             "param": 170

@@ -3,8 +3,11 @@ import logging
 class Logger():
     def __init__(self, name="Debug Logger", file="process.log"):
         self.logger = logging.getLogger(name)
-        file_handler = logging.FileHandler(file)
-        self.logger.addHandler(file_handler)
+
+        if file:
+            file_handler = logging.FileHandler(file)
+            self.logger.addHandler(file_handler)
+        
         self.logger.setLevel(logging.INFO)
         console_handler = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -24,3 +27,8 @@ class Logger():
             self.logger.error(text)
         else:
             raise Exception(f"illegal mode {desc} in func log_text()...")
+        
+global_logger = Logger(
+    name = "Global Logger",
+    file = "./"
+)

@@ -14,10 +14,11 @@ def run_zhem(conf_path: str, if_force: int):
     '''
     output_path = setting_module.settings['output_path']
     if if_force and os.path.exists(output_path):
-        if if_force:
-            shutil.rmtree(output_path)
+        if not if_force:
             logger.log_text(f"The output path {output_path} already exists. The program has been terminated because the force mode is not used. Please check and replace it with a non-existent path.", desc='error')
+            assert 0
         else:
+            shutil.rmtree(output_path)
             logger.log_text(f"The output path {output_path} already exists, please check and replace it with a non-existent path.", desc='warning')
     os.makedirs(output_path, exist_ok=True)
 

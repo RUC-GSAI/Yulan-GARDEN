@@ -20,6 +20,7 @@ class Cleaner():
         }
 
     def load_settings(self, setting: Settings) -> None:
+        self.if_clean = setting.get('if_clean', False)
         self.clean_setting = setting['clean_paras']
 
         self.my_funcs = self.clean_setting['my_funcs']
@@ -34,6 +35,10 @@ class Cleaner():
         self.tra2sim = self.clean_setting['tra2sim']
 
     def clean_single_text(self, text: str) -> str:
+        # if self.if_clean == False, then do not clean, just return origin text {{text}}
+        if not self.if_clean:
+            return text
+        
         if self.my_funcs['use']:
             text = self.cleaner_ops['CleanerSubstitutePassageBySelfDefinedFunctions'].clean_single_text(text, self.my_funcs['funcs'])
         if self.rm_crawlerchars['use']:

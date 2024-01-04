@@ -15,7 +15,7 @@ class Filter:
             "FilterPassageByLangScore": FilterPassageByLangScore(),
             "FilterPassageByLength": FilterPassageByLength(),
             # ppl need a parameter {{input_path}} to initialize
-            "FilterPassageByPPL": FilterPassageByPPL(),
+            # "FilterPassageByPPL": FilterPassageByPPL(),
             "FilterPassageByProportionOfAlphaNumber": FilterPassageByProportionOfAlphaNumber(),
             "FilterPassageByProportionOfNonChineseChars": FilterPassageByProportionOfNonChineseChars(),
             "FilterPassageByProportionofShortline": FilterPassageByProportionofShortline(),
@@ -23,6 +23,7 @@ class Filter:
         }
 
     def load_settings(self, setting: Settings) -> None:
+        self.if_filter = setting.get('if_filter', False)
         self.filter_setting = setting['filter_paras']
 
         self.fil_my_rules = self.filter_setting['fil_my_rules']
@@ -40,7 +41,12 @@ class Filter:
         '''
         if single text should be filtered (i.e. scattered),
         return True 
-        '''       
+        '''
+
+        # if self.if_filter == False, then do not filter, just return False
+        if not self.if_filter:
+            return False
+
         if self.fil_my_rules['use']:
             if self.filter_ops["FilterPassageBySelfDefinedFunctions"].filter_single_text(
                 text, 

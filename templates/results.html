@@ -1,12 +1,216 @@
-<!DOCTYPE html>
 <html>
 <head>
-    <title>结果</title>
+    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.3,  maximum-scale=2.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <style>
+        body {
+            height: 100%;
+            width: 100%;
+            min-width: 1000px;
+        }
+        .blank {
+            height: 20%;
+        }
+        .search {
+            /* background-color: lawngreen; */
+            color: red;
+        }
+        #search_box {
+            height: 48px;
+            border-radius: 10px 0px 0px 10px;
+            font-size: 20px;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        }
+        #search_btn {
+            background-color: rgb(176, 6, 6);
+            height: 48px;
+            border-radius: 0px 10px 10px 0px;
+            font-size: 20px; 
+        }
+
+        .t-right-bar {
+            position: fixed;
+            right: 0;
+            bottom: 10%;
+            width: 48px;
+            height: 48px;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .t-right-bar > div {
+            float: left;
+            height: 45px;
+            line-height: 45px;
+            margin-bottom: 1px;
+            border-radius: 20px 0 0 20px;
+            color: #fff;
+            padding-left: 25%;
+            clear: both;
+            white-space: nowrap;
+            font-size: 13px;
+            font-style: normal;
+            background-color: #aaa;
+            background-repeat: no-repeat;
+            /* background-position: 12px center; */
+            transition: transform .2s cubic-bezier(.215, .61, .355, 1), padding .2s cubic-bezier(.215, .61, .355, 1), margin .2s cubic-bezier(.215, .61, .355, 1), background-color .2s cubic-bezier(.215, .61, .355, 1)
+        }
+
+        .t-right-bar > div.active, .t-right-bar > div:hover {
+            transform: translateX(-100%);
+            /* padding-left: 45px; */
+            padding-right: 10px;
+            margin-left: 48px;
+            background-color: #23a0e1;
+            text-decoration: none;
+            color: #fff
+        }
+
+        .t-right-bar img {
+            height: 36px;
+            width: 36px;
+            vertical-align: middle;
+        }
+
+    </style>
 </head>
 <body>
-    <h1>结果</h1>
+    <div class="container">
+        <div class="page-header">
+            <div class="row">
+                <div class="col-md-1">
+                    <a href="/search/"><img src="{{ url_for('static', filename='imgs/R.png') }}" style="height: 60px; margin: 0px;"></a>
+                </div>
+                <div class="col-md-2">
+                    <h1 style="font-family: 'Courier New', Courier, monospace; font-weight: bold;">
+                        <a href="/search/" style="text-decoration:none">CorpusProber</a>
+                    </h1>
+                </div>
+                <div class="col-md-9">
+                    <div class="input-group col-md-12">
+                        <form id="searchform" action="#" method="post">
+                            <div class="row" style="margin-top:10px;">
+                                <div class="col-md-2" style="padding: 0px;"></div>
+                                <div class="col-md-8" style="padding-right: 0px;">
+                                    <span class="input-group-btn">
+                                         <input class="form-control" id="search_box" name="query" value="{{ query }}" required="required">
+                                         <!-- onKeyUp="value=value.replace(/[^\w+\s\-\_\:\'\,$]/g, '')" -->
+                                     </span>
+                                 </div>
+                                 <div class="col-md-2" style="padding-left: 0px;">
+                                    <button class="btn btn-info btn-search btn-block" id="search_btn" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+                                 </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <!-- 添加结果文件的下载链接 -->
-    <a href="{{ url_for('download', filename='result.txt') }}">下载结果文件</a>
+
+        
+        <div class="row">
+            <div class="col-md-12" style="font-size: 10px; padding: 0px;">
+                {{ N }} Results &nbsp; Time cost: {{cost_time}}s 
+            </div>
+        </div>
+
+        <!-- return to retriever page -->
+        <form action="/retriever" method="post">
+            <input type="submit" name="retrieve_task" value="return">
+        </form>
+
+        <hr style="width: 100%; color: #0e0320;"/>
+
+        {% for item in res %}
+        <div class="row">
+            <div>
+                <h3 class="info">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-fill" viewBox="0 0 16 16">
+                        <path d="M4 0h5.293A1 1 0 0 1 10 .293L13.707 4a1 1 0 0 1 .293.707V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm5.5 1.5v2a1 1 0 0 0 1 1h2l-3-3z"/>
+                        </svg>
+                    {{loop.index}}
+                </h3>
+                <span id="{{loop.index}}_passage">{{ item['text'] }}</span>
+            </div>
+            <div>
+                <br>
+                <span style="font-size: 15px; float: left;" id="{{loop.index}}_source">Source: {{ item['source'] }}</span>
+                <span style="font-size: 15px; float: right;"> scroe: {{ item['score'] }} </span>
+            </div>
+        </div>
+        <hr style="width: 100%; color: #0e0320;"/>
+        {% endfor %}
+
+
+        <div class="t-right-bar">
+            <div class="t-bar-rocket" id="back-to-top"><img src="{{ url_for('static', filename='imgs/rocket.png') }}">TOP</div>
+        </div>
+
+
+        <script src="http://code.jquery.com/jquery-latest.js"></script>
+        <script>
+                
+            var stopWords = [];
+
+            function HighLight(string, keyword) {
+                var reg = new RegExp(keyword, "gi");
+                string = string.replace(reg, function(txt){
+                    return `<span class="search">` + txt + "</span>";
+                })
+                return string;
+            }
+
+            function find(searchVal) {
+                searchVal = searchVal.trim().split(/\s+/);
+                for(var i = 1; i <= {{ N }}; i++ ){
+                    for(var j = 0; j < searchVal.length; j ++){
+                        if(stopWords.indexOf(searchVal[j]) > -1){
+                            continue;
+                        }
+                        else{
+                            let passage = document.getElementById(i+'_passage');
+                            let source = document.getElementById(i+'_source');
+                            // var reg1 = /<script[^>]*>(.|\n)*<\/script>/gi;
+                            let passageText = passage.innerHTML;
+                            let sourceText = source.innerHTML; //.replace(reg1, "");
+                            let re = new RegExp(searchVal[j], "ig");
+                            passage.innerHTML = HighLight(passageText, re);
+                            source.innerHTML = HighLight(sourceText, re);
+                        }
+                    }
+                }
+            }
+            var query = String("{{query}}");
+            find(query);
+
+
+            $(".t-right-bar").hide();
+            $(function () {
+                $(window).scroll(function () {
+                    if ($(window).scrollTop() > 1000) {
+                        $(".t-right-bar").fadeIn(500);
+                    }
+                    else {
+                        $(".t-right-bar").fadeOut(500);
+                    }
+                });
+
+                $("#back-to-top").click(function () {
+                    $('body,html').animate({scrollTop: 0}, 500);
+                    return false;
+                });
+            });
+
+            for(var i = 1; i <= {{ N }}; i++ ){
+                let text = document.getElementById(i+'_passage');
+                let formattedText = text.innerHTML.replace(/\n/g, "<br>");
+                document.getElementById(i+'_passage').innerHTML = formattedText;
+            }
+
+        </script>
+
 </body>
 </html>

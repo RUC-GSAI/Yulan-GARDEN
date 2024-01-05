@@ -1,10 +1,18 @@
 from utils.settings import *
+from utils.evaluator.PerplexityEvaluator import PerplexityEvaluator
+from utils.evaluator.LangIdentifier import LangIdentifier
 import re
 import numpy as np
 import json
 import time
 import logging
 from datetime import datetime
+from statistics import mean, variance
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import os
+import seaborn as sns
+from shutil import rmtree
 
 
 def binary_search(array_list: list, find: float, left: int, right: int) -> list:
@@ -44,10 +52,13 @@ class Debugger():
         self.load_settings(setting=setting)
 
     def load_settings(self, setting: Settings) -> None:
+        self.fig_path = 'static/figs/'
         # for filter parameters
         self.debug_paras = setting['debug_paras']
         self.debug_report_path = self.debug_paras['debug_report_path']
         self.debug_short_texts = self.debug_paras['debug_short_texts']
+        self.debug_langs = self.debug_paras['debug_langs']
+        self.debug_ppl = self.debug_paras['debug_ppl']
         # 'debug_find_cases' is regarded as a cleaner method
         self.debug_find_cases = self.debug_paras['debug_find_cases']
         if 'debug_cases_num' in self.debug_paras.keys(): self.cases_num = self.debug_paras['debug_cases_num']
@@ -61,6 +72,11 @@ class Debugger():
             The last element 'self.short_texts[200]' means the number of texts with length more than 200 (including 200).
             '''
             self.short_texts = (self.debug_short_texts['length'] + 1) * [0]
+            '''
+            'self.texts_length' is a list of length of texts. 
+            (calculate the mean and the variance, draw the distribution of texts length.)
+            '''
+            self.texts_length = []
         self.debug_non_ch = self.debug_paras['debug_non_ch']
         if self.debug_non_ch['use']:
             '''
@@ -76,7 +92,22 @@ class Debugger():
             'self.short_lines' are distribution of short lines ratio of texts (similar to 'self.non_ch').
             '''
             self.short_lines = (100 + 1) * [0]
-        
+        if self.debug_langs['use']:
+            # create LangIdentifier to make statistics on the language distribution of text
+            self.langidentifier = LangIdentifier()
+            '''
+            'self.langs' is distribution of language ratio of texts.
+            '''
+            self.langs = {}
+            # ppl must need language
+            if self.debug_ppl['use']:
+                # create PerplexityEvaluator to make statistics on the ppl distribution of text
+                self.perplexityEvaluator = PerplexityEvaluator()
+                '''
+                'self.ppl' are lists of ppl of texts: {lang: [list of ppl]}
+                '''
+                self.ppl = {}
+
         # for cleaner 
         self.clean_setting = setting['clean_paras']
         if self.clean_setting['rm_re_rules']['use']:
@@ -219,6 +250,10 @@ class Debugger():
             self._debug_short_lines(text)
         if self.debug_find_cases['use']:
             self._debug_find_cases(text)
+        if self.debug_langs['use']:
+            language = self._debug_langs(text)
+            if self.debug_ppl['use']:
+                self._debug_ppl(text, language)
         if self.clean_setting['rm_re_rules']['use']:
             self._debug_rm_re_rules(text)
         if self.clean_setting['sub_re_rules']['use']:
@@ -242,9 +277,11 @@ class Debugger():
         if self.debug_short_lines['use']:
             agg_short_lines = np.cumsum(self.short_lines[::-1])
             percentage_short_lines = agg_short_lines / self.total_texts
+        if self.debug_langs['use']:
+            percentage_lang = {lang: count/self.total_texts for lang, count in self.langs.items()}
 
         # some variables for output report
-        dic_short_texts, dic_non_ch, dic_short_lines = {}, {}, {}
+        dic_short_texts, dic_non_ch, dic_short_lines, dic_langs, dic_ppl = {}, {}, {}, {}, {}
         info_short_texts, info_non_ch, info_short_lines = '', '', ''
         # short_texts
         if self.debug_short_texts['use']:
@@ -307,8 +344,24 @@ class Debugger():
                         dic_short_lines['[{}%, {}%)'.format(100-i, 101-i)] = '{:.2%}'.format(percentage_short_lines[i])
                         if percentage_short_lines[i] == 1:
                             break
-                
-        data = {'short_texts': {'info': info_short_texts, 'param: filter ratio': dic_short_texts}, 'non_ch': {'info': info_non_ch, 'param: filter ratio': dic_non_ch}, 'short_lines': {'info': info_short_lines, 'param: filter ratio': dic_short_lines}}
+
+        if self.debug_langs['use']:
+            dic_langs = {lang: '{:.2%}'.format(percentage) for lang, percentage in percentage_lang.items()}
+            if self.debug_ppl['use']:
+                dic_ppl = {lang: {'mean': '{:.2f}'.format(mean(ppl_list)), 'var': '{:.2f}'.format(variance(ppl_list))} for lang, ppl_list in self.ppl.items()}
+        
+        dic_length = {'mean': '{:.2f}'.format(mean(self.texts_length)), 'var': '{:.2f}'.format(variance(self.texts_length))}
+
+        # draw figures
+        if os.path.exists(self.fig_path): 
+            rmtree(self.fig_path)
+        os.makedirs(self.fig_path, exist_ok=True)
+        self._pie_chart(self.langs, os.path.join(self.fig_path, 'langs.png'), 'languages distribution')
+        self._histogram(self.texts_length, os.path.join(self.fig_path, 'lengths.png'), 'lengths distribution')
+        for lang in self.ppl:
+            self._histogram(self.ppl[lang], os.path.join(self.fig_path, 'ppl_{}.png'.format(lang)), 'ppl of {}'.format(lang))
+
+        data = {'texts_length': dic_length, 'langs': dic_langs, 'ppls': dic_ppl, 'short_texts': {'info': info_short_texts, 'param: filter ratio': dic_short_texts}, 'non_ch': {'info': info_non_ch, 'param: filter ratio': dic_non_ch}, 'short_lines': {'info': info_short_lines, 'param: filter ratio': dic_short_lines}}
         return data
 
     def _cleaner_report(self):
@@ -367,9 +420,10 @@ class Debugger():
 
     def _debug_short_texts(self, text: str) -> None:
         '''
-        Modify 'self.short_texts' according to the length of the text.
+        Modify 'self.short_texts' and 'self.texts_length' according to the length of the text.
         '''
         text_length = len(text)
+        self.texts_length.append(text_length)
         if text_length >= self.debug_short_texts['length']:
             self.short_texts[self.debug_short_texts['length']] += 1
         else:
@@ -400,6 +454,28 @@ class Debugger():
         else:
             self.short_lines[short_lines] += 1
 
+    def _debug_langs(self, text: str) -> str:
+        '''
+        Modify 'self.langs' according to the language of the text
+        '''
+        label, _ = self.langidentifier.evaluate_single_text(text)
+        if label[0] not in self.langs:
+            self.langs[label[0]] = 1
+        else:
+            self.langs[label[0]] += 1
+        return label[0]
+
+    def _debug_ppl(self, text: str, lang: str) -> None:
+        '''
+        Modify 'self.ppl' according to the language and the ppl of the text
+        '''
+        if lang not in ['en', 'zh']:
+            return
+        if lang not in self.ppl:
+            self.ppl[lang] = []
+        ppl = self.perplexityEvaluator.evaluate_single_text(text, lang)
+        self.ppl[lang].append(ppl)
+        
     def _debug_find_cases(self, text: str) -> None:
         '''
         Modify 'self.find_cases_words' according to the matching times, the execute time, matching examples.
@@ -480,4 +556,30 @@ class Debugger():
             text = text[0: text.find(rule)]
             # end = time.time()
             self.rm_str_seg[rule]['avg time'] += time.time()
+        
+    def _pie_chart(self, data: dict, fig_path: str, title: str) -> None:
+        if os.path.exists(fig_path): os.remove(fig_path)
+        labels = data.keys()
+        sizes = data.values()
+        colors = cm.Set1(range(len(labels)))
+        plt.clf()
+        plt.cla()
+        plt.pie(sizes, labels=labels, colors=colors, autopct='%.2f%%') 
+        plt.legend()
+        plt.axis('equal')
+        plt.title(title, y=0.95)
+        plt.savefig(fig_path)
+
+    def _histogram(self, data: list, fig_path: str, title: str) -> None:
+        if os.path.exists(fig_path): os.remove(fig_path)
+        plt.clf()
+        plt.cla()
+        bin_width = (max(data) - min(data)) / np.sqrt(len(data))
+        num_bins = int(np.ceil((max(data) - min(data)) / bin_width))
+        sns.displot(data, bins=num_bins)        
+        plt.title(title, y=0.95)
+        # plt.xlabel('Value')
+        # plt.ylabel('Frequency')
+        plt.savefig(fig_path)
+
 

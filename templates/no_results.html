@@ -1,0 +1,82 @@
+<!--
+ * @Author: Aman
+ * @Date: 2023-11-30 17:36:10
+ * @Contact: cq335955781@gmail.com
+ * @LastEditors: Aman
+ * @LastEditTime: 2023-12-05 17:09:43
+-->
+<html>
+<head>
+    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.3,  maximum-scale=2.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <style>
+        .blank {
+            height: 20%;
+        }
+        #search_box {
+            height: 48px;
+            border-radius: 10px 0px 0px 10px;
+            font-size: 20px;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        }
+        #search_btn {
+            background-color: rgb(167, 6, 6);
+            height: 48px;
+            border-radius: 0px 10px 10px 0px;
+            font-size: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div class="row">
+                <div class="col-md-1">
+                    <a href="/search/"><img src="{{ url_for('static', filename='imgs/rocket.png') }}"style="height: 60px; margin: 0px;"></a>
+                </div>
+                <div class="col-md-2">
+                    <h1 style="font-family: 'Courier New', Courier, monospace; font-weight: bold;">
+                        <a href="/search/" style="text-decoration:none">CorpusProber</a>
+                    </h1>
+                </div>
+                <div class="col-md-9">
+                    <div class="input-group col-md-12">
+                        <form id="searchform" action="#" method="post">
+                            <div class="row" style="margin-top:10px;">
+                                <div class="col-md-2" style="padding: 0px;"></div>
+                                <div class="col-md-8" style="padding-right: 0px;">
+                                    <span class="input-group-btn">
+                                         <input class="form-control" id="search_box" name="query" value="{{ query }}" required="required">
+                                     </span>
+                                 </div>
+                                 <div class="col-md-2" style="padding-left: 0px;">
+                                    <button class="btn btn-info btn-search btn-block" id="search_btn" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+                                 </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- return to retriever page -->
+        <form action="/retriever" method="post">
+            <input type="submit" name="retrieve_task" value="return">
+        </form>
+        
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                 <h2>No results!</h2>           
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+     </div>
+
+
+     <script src="http://code.jquery.com/jquery-latest.js"></script>
+
+</body>
+</html>

@@ -50,7 +50,7 @@ class Deduplicator:
         with open(self.output_file, "w", encoding="utf-8") as fw:
             for i, data in enumerate(d):
                 # if i % 500000 == 0:
-                print(i)
+                # print(i)
                 fw.write(json.dumps(data, ensure_ascii=False) + "\n")
                 fw.flush()
 

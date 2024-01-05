@@ -2,6 +2,16 @@
 <html>
 <head>
     <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+    <style>
+        .image-container {
+            display: flex;
+        }
+      
+        .image-container img {
+            margin-right: 10px; /* 可选的图片间距，根据需要进行调整 */
+        }
+    </style>
+    
 </head>
 
 
@@ -46,7 +56,7 @@
                     }
                 };
                 xhr.send();
-            }, 500);
+            }, 5000);
         });
     </script>
 
@@ -59,36 +69,51 @@
                 <summary>details of debug file</summary>
                     <pre>{{ret_args['debug_file']}}</pre>
             </details>
+            <details>
+                <summary>dirstribution of data</summary>
+                    {% if ret_args['figs_list']|length > 0 %}
+                        <div class="image-container">
+                                {% for fig_path in ret_args['figs_list'] %}
+                                    <div class="col-md-2">
+                                        <img src="{{ fig_path }}" width="305" height="290">
+                                    </div>
+                                {% endfor %}
+                        </div>
+                    {% endif %}
+            </details>
+        {% endif %}
+        {% if ret_args['sample_results'] %}
+            <details>
+                <summary><h2>Examples</h2></summary>                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>origin texts</th>
+                                <th>refined texts</th>
+                                <!-- <th>differences</th> -->
+                            </tr>
+                        </thead>
+                    
+                        {% for row in ret_args['sample_results'] %}
+                            <tr>
+                                <td>{{ row[0] }}</td>
+                                <td>{{ row[1] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+            </details>
+            <br>
+            <!-- retriever task -->
+            <form action="/retriever" method="post">
+                <!-- <input type="submit" value="提交任务"> -->
+                <!-- <label for="custom_config_file">配置文件名：</label> -->
+                <input type="submit" id="retrieve_task" name="retrieve_task" value="retreve" >
+                <!-- <button id="runButton">提交任务</button> -->
+            </form>
         {% endif %}
     {% endif %}
 
-    {% if sample_results %}
-        <h2>Examples</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>origin texts</th>
-                    <th>refined texts</th>
-                    <!-- <th>differences</th> -->
-                </tr>
-            </thead>
-        
-            {% for row in sample_results %}
-                <tr>
-                    <td>{{ row[0] }}</td>
-                    <td>{{ row[1] }}</td>
-                </tr>
-            {% endfor %}
-        </table>
-        <br>
-        <!-- retriever task -->
-        <form action="/retriever" method="post">
-            <!-- <input type="submit" value="提交任务"> -->
-            <!-- <label for="custom_config_file">配置文件名：</label> -->
-            <input type="submit" id="submit_task" name="submit_task" value="retreve" >
-            <!-- <button id="runButton">提交任务</button> -->
-        </form>
-    {% endif %}
+    
     <br>
     <!-- return to index page -->
     <form action="/" method="post">

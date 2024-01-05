@@ -1,7 +1,7 @@
 import logging
 
 class Logger():
-    def __init__(self, name="Debug Logger", file="process.log"):
+    def __init__(self, name="Global Logger", file="process.log"):
         self.logger = logging.getLogger(name)
 
         if file:
@@ -28,7 +28,11 @@ class Logger():
         else:
             raise Exception(f"illegal mode {desc} in func log_text()...")
         
+# global_logger = Logger(
+#     name = "Global Logger",
+#     file = "./bash/log/global_log.txt"
+# )
+        
 global_logger = Logger(
-    name = "Global Logger",
-    file = "./"
+    name = "Global Logger"
 )

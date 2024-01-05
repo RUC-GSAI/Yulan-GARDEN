@@ -33,7 +33,7 @@ class PerplexityEvaluator(EvaluatorBase):
             # load models from pretrained Kenlm
             for lang in self.langs:
                 self.models[lang] = self.model = KenlmModel.from_pretrained(
-                    model_path = "",
+                    model_path=model_path,
                     language=lang
                 )
         else:

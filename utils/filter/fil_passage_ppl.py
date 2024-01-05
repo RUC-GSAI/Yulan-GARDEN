@@ -57,7 +57,9 @@ class FilterPassageByPPL(FilterBase):
         global_logger.log_text("Begin to Calculate the upper and lower bounds of the ppl filtering threshold..")
 
         # sampled items
-        sampled_dt = self.sampler.sample_randomly()
+        sampled_dt = self.sampler.sample_randomly_works()
+
+        global_logger.log_text('\n\nsample complete!\n\n\n\n')
 
         # label language of each item
         if self.lang_field in sampled_dt[0].keys():

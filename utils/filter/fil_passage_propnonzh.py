@@ -17,5 +17,5 @@ class FilterPassageByProportionOfNonChineseChars(FilterBase):
         Last Modified: 2023/11/22
         Modified Target: Laplace Smooth by 1e-6 to solve edge case if 'divided by zero' 
         '''
-        find = re.findall(r'[^\u4e00-\u9fa5]|[a-zA-Z0-9]', text)                
+        find = re.findall(r'[^\u4e00-\u9fa5]|[a-zA-Z0-9]', text)
         return len(find) / (len(text) + 1e-6) >= non_ch

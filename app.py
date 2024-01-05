@@ -6,7 +6,7 @@ from utils.quick_start import run_zhem
 from time import sleep, time
 import threading
 import jsonlines
-from utils.utils.logger import Logger
+from utils.utils.logger import global_logger
 from utils.retriever.elasticobj import ElasticObj
 
 from fastapi import FastAPI, Form
@@ -208,10 +208,12 @@ def add_data_information(refined_data_path, config):
         refined_data = {}
     # 'output_source_value' is dataset name
     data_name = config['output_source_value'].lower()
+    new_paths = {'input_path': config['input_path'], 'output_path': config['output_path']}
     if data_name in refined_data:
-        refined_data[data_name].append({'input_path': config['input_path'], 'output_path': config['output_path']})
+        if new_paths not in refined_data[data_name]: 
+            refined_data[data_name].append(new_paths)
     else:
-        refined_data[data_name] = [{'input_path': config['input_path'], 'output_path': config['output_path']}]
+        refined_data[data_name] = [new_paths]
     with open(refined_data_path, 'w') as fw:
         json.dump(refined_data, fw, indent=4, ensure_ascii=False)    
 
@@ -230,7 +232,7 @@ def process_data():
     '''
     for i in range(10):
         sleep(1)
-        logger.log_text('{}: for test\n'.format(i))
+        global_logger.log_text('{}: for test\n'.format(i))
 
 # no use
 def sample(input_path, sample_length=10):
@@ -257,17 +259,16 @@ app.secret_key = '123'
 processing_done = threading.Event()
 # 获取settings文件夹下的所有配置文件列表
 settings_folder = 'settings'
-log_path = 'process.log'
 tmp_folder = 'tmp'
+log_path = os.path.join(tmp_folder, 'process.log')
 # {dataset name: [{'input_path': config['input_path'], 'output_path': config['output_path']}]}
-refined_data_path = 'refined_data.json'
+refined_data_path = os.path.join(tmp_folder, 'refined_data.json')
 example_path = 'settings/example.json'
 data_names = get_data_names(refined_data_path)
-logger = Logger()
 # app.mount("/static", StaticFiles(directory="static"), name="static")
 # 将自定义的JSON编码器类设置为app的json_encoder
 app.json_encoder = CustomJSONEncoder
-
+if not os.path.exists(tmp_folder): os.mkdir(tmp_folder)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -352,6 +353,26 @@ def show_config():
                 json.dump(config, fr, indent=4)
             # 使用json格式化展示配置信息
             config_formatted = json.dumps(config, indent=4, ensure_ascii=False)
+
+            zhem_ret_args = run_zhem(os.path.join(settings_folder, session['config_name']), 1, 1)   
+
+            if config['if_debug']:
+                # figs_list = get_files_in_folder(os.path.join(config['output_path'], 'figs/'))
+                figs_list = get_files_in_folder('static/raw_figs/')
+                with open(config['debug_paras']['debug_report_path'], 'r') as fr:
+                    debug_file = json.load(fr)
+                ret_args = {'if_debug': True, 'debug_path': config['debug_paras']['debug_report_path'], 'figs_list': figs_list, 'debug_file': json.dumps(debug_file, indent=4, ensure_ascii=False)}
+            else:
+                ret_args = {'if_debug': False}   
+            # # sample texts from 'input_path', return the sample list and refined list
+            # sample_results = sample(config['input_path'])
+            if zhem_ret_args and 'warning' in zhem_ret_args:                
+                ret_args['warning'] = zhem_ret_args['warning']
+
+            # save the temp results
+            with open(os.path.join(tmp_folder, 'ret_args.json'), 'w') as fw:
+                json.dump(ret_args, fw, indent=4)
+
             # 将config的名字保存，便于processing访问
             session['config_name'] = new_config_file            
             return render_template('show_config.html', config=config_formatted, parameter_definitions=load_parameter_definitions(example_path))     
@@ -437,8 +458,6 @@ def processing():
             # save the temp results
             with open(os.path.join(tmp_folder, 'ret_args.json'), 'w') as fw:
                 json.dump(ret_args, fw, indent=4)
-            # with open(os.path.join(tmp_folder, 'sample_results.json'), 'w') as fw:
-            #     json.dump(sample_results, fw, indent=4)
 
             # # add data imformation (know about the input_path and output_path of all the refined data)
             add_data_information(refined_data_path, config)

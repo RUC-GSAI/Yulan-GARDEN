@@ -1,7 +1,7 @@
 import logging
 
 class Logger():
-    def __init__(self, name="Global Logger", file="process.log"):
+    def __init__(self, name="Global Logger", file="tmp/process.log"):
         self.logger = logging.getLogger(name)
 
         if file:

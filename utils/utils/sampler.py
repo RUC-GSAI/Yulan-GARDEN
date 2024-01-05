@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from typing import TypedDict
 from tqdm import tqdm
 
-# from utils.utils.logger import Logger
+from utils.utils.logger import global_logger
 
 textkey = 'Content'
 
@@ -42,29 +42,20 @@ class Sampler():
             self.if_sample_by_length = sample_config.get("if_sample_by_length", False)
             self.SAMPLE_BY_LENGTH_NUM = sample_config.get("SAMPLE_BY_LENGTH_NUM", 50)
             self.SAMPLE_BY_LENGTH_PROPORTION = sample_config.get("SAMPLE_BY_LENGTH_PROPORTION", 10)
-
-        self.logger = logging.getLogger("Sampler_Logger")
-        file_handler = logging.FileHandler("process.log")
-        self.logger.addHandler(file_handler)
-        self.logger.setLevel(logging.INFO)
-        console_handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        console_handler.setFormatter(formatter)
-        self.logger.addHandler(console_handler)
-        self.logger.info(f"current sampler configuration: \n {sample_config}")
     
     def _calculate_work_count(self, work) -> int:
         work_count = 0
         work_count += int(os.popen('wc -l %s' % work).read().split()[0])
         return work_count
 
-    def sample_randomly(self) -> None:
-        line_num = self._calculate_work_count(self.input_path)
+    def _sample_randomly(self, input_path) -> None:
+        line_num = self._calculate_work_count(input_path)
         ret = []
-
-        self.logger.info(f"begin to sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines from {self.input_path}..")
         
-        with open(self.input_path, mode='r', encoding="utf-8") as fr, open(os.path.join(self.output_path, 'random.jsonl'), mode='w') as fw:
+        global_logger.log_text(f"begin to sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines from {input_path}..")
+        
+        # mode: append (if self.input_path is a list, there may be many writings)
+        with open(input_path, mode='r', encoding="utf-8") as fr, open(self.output_path, mode='a') as fw:
             cnt = 0
             for line in fr:
                 if random.random() <= self.SAMPLE_RANDOMLY_NUM / line_num * self.SAMPLE_RANDOMLY_PROPORTION:
@@ -75,12 +66,25 @@ class Sampler():
                     cnt += 1
                 if cnt >= self.SAMPLE_RANDOMLY_NUM:
                     break
-        
+                
         if self.output_to_file:
-            self.logger.info(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines into {os.path.join(self.output_path, 'random.jsonl')}..")
+            global_logger.log_text(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines into {self.output_path}..")
         else:
-            self.logger.info(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines..")
+            global_logger.log_text(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines..")
             return ret
+
+    def sample_randomly_works(self) -> None:
+        '''
+        self.input_path can be a work list (from prepare_works) or a file
+        '''
+        # to clear the file: self.output_path
+        with open(self.output_path, mode='w') as fw:
+            pass    
+        if isinstance(self.input_path, list):
+            for input_path in self.input_path:
+                self._sample_randomly(input_path)
+        else:
+            self._sample_randomly(self.input_path)
 
     def gen_length_statistic(self, len_list: list):
         mean = np.mean(len_list)
@@ -116,7 +120,7 @@ class Sampler():
         short_threshold, long_threshold = self.calc_length_threshold()
         # EXTREMELY SHORT
         line_num = self._calculate_work_count(self.input_path)
-        self.logger.info(f"begin to sample short text {self.SAMPLE_BY_LENGTH_NUM} / {line_num} lines from {self.input_path}..")
+        global_logger.log_text(f"begin to sample short text {self.SAMPLE_BY_LENGTH_NUM} / {line_num} lines from {self.input_path}..")
         with open(self.input_path, mode='r', encoding="utf-8") as fr, open(os.path.join(self.output_path, 'short.jsonl'), mode='w') as fw:
             cnt = 0
             for line in fr:
@@ -127,10 +131,10 @@ class Sampler():
                         cnt += 1
                     if cnt >= self.SAMPLE_BY_LENGTH_NUM:
                         break
-        self.logger.info(f"finish sample short text {self.SAMPLE_BY_LENGTH_NUM} / {line_num} lines into {os.path.join(self.output_path, 'short.jsonl')}..")
+        global_logger.log_text(f"finish sample short text {self.SAMPLE_BY_LENGTH_NUM} / {line_num} lines into {os.path.join(self.output_path, 'short.jsonl')}..")
 
         # EXTREMELY LONG
-        self.logger.info(f"begin to sample long text {self.SAMPLE_BY_LENGTH_NUM} / {line_num} lines from {self.input_path}..")
+        global_logger.log_text(f"begin to sample long text {self.SAMPLE_BY_LENGTH_NUM} / {line_num} lines from {self.input_path}..")
         with open(self.input_path, mode='r', encoding="utf-8") as fr, open(os.path.join(self.output_path, 'long.jsonl'), mode='w') as fw:
             cnt = 0
             for line in fr:
@@ -141,24 +145,38 @@ class Sampler():
                         cnt += 1
                     if cnt >= self.SAMPLE_BY_LENGTH_NUM:
                         break
-        self.logger.info(f"finish sample long text {self.SAMPLE_BY_LENGTH_NUM} / {line_num} lines into {os.path.join(self.output_path, 'long.jsonl')}..")
+        global_logger.log_text(f"finish sample long text {self.SAMPLE_BY_LENGTH_NUM} / {line_num} lines into {os.path.join(self.output_path, 'long.jsonl')}..")
 
     def do_sample(self):
         if self.if_sample_randomly:
-            self.sample_randomly()
+            self.sample_randomly_works()
         if self.if_sample_by_length:
             self.sample_by_length()
 
 if __name__ == '__main__':
-    sampleconfig = SampleConfig()
-    # sampleconfig["input_path"] = "/fs/archive/share/u2022101014/chinesewebtext/filtered/hot_20000_cleaned_v4.jsonl"
-    # sampleconfig["input_path"] = "/fs/archive/share/u2022101014/baike_triple/10.jsonl"
-    # sampleconfig["output_path"] = "/home/u2022101014/ZHEM/utils/test_files/texts/cleaned_old"
-    sampleconfig["input_path"] = "/fs/archive/share/u2022101014/ZWJCYLK/ZWJCYLK-3/29.json"
-    sampleconfig["output_path"] = "/fs/archive/share/u2022101014/ZWJCYLK/sampled"
-    sampleconfig["SAMPLE_RANDOMLY_NUM"] = 500
-    sampleconfig["if_sample_by_length"] = True
-    sampleconfig["SAMPLE_BY_LENGTH_NUM"] = 250
+    # sampleconfig = SampleConfig()
+    # # sampleconfig["input_path"] = "/fs/archive/share/u2022101014/chinesewebtext/filtered/hot_20000_cleaned_v4.jsonl"
+    # # sampleconfig["input_path"] = "/fs/archive/share/u2022101014/baike_triple/10.jsonl"
+    # # sampleconfig["output_path"] = "/home/u2022101014/ZHEM/utils/test_files/texts/cleaned_old"
+    # sampleconfig["input_path"] = "/fs/archive/share/u2022101014/ZWJCYLK/ZWJCYLK-3/29.json"
+    # sampleconfig["output_path"] = "/fs/archive/share/u2022101014/ZWJCYLK/sampled"
+    # sampleconfig["SAMPLE_RANDOMLY_NUM"] = 500
+    # sampleconfig["if_sample_by_length"] = True
+    # sampleconfig["SAMPLE_BY_LENGTH_NUM"] = 250
 
-    sampler = Sampler(sampleconfig)
-    sampler.do_sample()
+    # sampler = Sampler(sampleconfig)
+    # sampler.sample_randomly_works()
+
+    # config = {'input_path': ["/home/u2022101014/ZHEM/bash/random_filtered.jsonl", "/home/u2022101014/ZHEM/bash/random_filtered_1.jsonl"],
+    #           'output_path': "/fs/archive/share/u2022101014/CICG_zh/data_sampled/cleaned_1/raw.jsonl",
+    #           'if_sample_randomly': True,
+    #           'SAMPLE_RANDOMLY_NUM': 10}
+    # sampler = Sampler(SampleConfig(config))
+    # # print(sampler.input_path)
+    # sampler.sample_randomly_works()
+
+    # import matplotlib.pyplot as plt
+    # from matplotlib import cm
+
+    a = {'mynio': 5, 1: 7}
+    print('hades' in a)

@@ -12,14 +12,14 @@ import os
 def process_work_mult_threads(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str):
     process_parallel_works(work_path, output_path, extract_module, clean_module, filter_module, parallel_paras, text_key)
 
-def process_work_single_thread(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, logger: Logger, text_key: str="text", input_ext: str='jsonl'):
+def process_work_single_thread(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, text_key: str="text", input_ext: str='jsonl'):
     if not os.path.exists(output_path): os.makedirs(output_path, exist_ok=True)
     for file in tqdm(prepare_works(work_path, input_ext=input_ext), desc='Process work single thread'):
         filename = os.path.basename(file)
         nwork_in = os.path.join(work_path, file)
         nwork_out = os.path.join(output_path, filename)
         
-        logger.log_text(f"work_in_path: {nwork_in}, work_out_path: {nwork_out}")
+        global_logger.log_text(f"work_in_path: {nwork_in}, work_out_path: {nwork_out}")
         print(f'{nwork_in} and {nwork_out}\n')
         assert(nwork_in != nwork_out)
         # try:
@@ -46,7 +46,7 @@ def process_single_text(text: str, extract_module: Extractor, clean_module: Clea
         return ""    
     return text
 
-def prepare_jsonl_files(settings: dict, logger: Logger):
+def prepare_jsonl_files(settings: dict):
     '''
     step 1: prepare jsonl files
     '''
@@ -76,7 +76,7 @@ def prepare_jsonl_files(settings: dict, logger: Logger):
             )
 
 
-def sample_debug(settings: dict, logger: Logger, option: str):
+def sample_debug(settings: dict, option: str):
     '''
     step 2 and 4: sample texts from raw/refined data, analyse by debugger
     '''
@@ -102,9 +102,9 @@ def sample_debug(settings: dict, logger: Logger, option: str):
             text = json.loads(line)[input_text_key]
             debugger_module.debug_single_text(text)
     debugger_module.debug_params_report()
-    logger.log_text(f"for {option} data: generating debug report {debugger_module.debug_report_path} finish..")
+    global_logger.log_text(f"for {option} data: generating debug report {debugger_module.debug_report_path} finish..")
 
-def refining_process(settings: dict, logger: Logger):
+def refining_process(settings: dict):
     '''
     step 3: refined data: cleaner, filter, deduplicator
     '''
@@ -118,7 +118,7 @@ def refining_process(settings: dict, logger: Logger):
 
     if settings['if_filter'] or settings['if_clean']:
         # do work and calculate work statistics
-        logger.log_text(f"Parallel Setting: {settings['if_parallel']}")
+        global_logger.log_text(f"Parallel Setting: {settings['if_parallel']}")
         if settings['if_parallel']:
             parallel_paras = settings['parallel_paras']
             process_work_mult_threads(
@@ -136,7 +136,7 @@ def refining_process(settings: dict, logger: Logger):
                 keep_text_only=True,
                 source_tag=output_source_value
             )
-            logger.log_text(f"Final data dir: {os.path.join(output_path, 'out')}")
+            global_logger.log_text(f"Final data dir: {os.path.join(output_path, 'out')}")
         else:
             process_work_single_thread(
                 work_path=work_path, 
@@ -144,7 +144,6 @@ def refining_process(settings: dict, logger: Logger):
                 extract_module=extract_module, 
                 clean_module=clean_module, 
                 filter_module=filter_module,
-                logger=logger,
                 text_key=input_text_key
             )
             dump_jsonls2jsonl(
@@ -153,16 +152,16 @@ def refining_process(settings: dict, logger: Logger):
                 keep_text_only=True,
                 source_tag=output_source_value
             )
-            logger.log_text(f"Final data dir: {os.path.join(output_path, 'out/tmp.jsonl')}")
+            global_logger.log_text(f"Final data dir: {os.path.join(output_path, 'out/tmp.jsonl')}")
 
         # if clean or filter is in the process, deduplicatior is in the process
         if settings['if_dedup']:
             dedupicator_module = Deduplicator(settings)
             dedupicator_module.dedup()
-            logger.log_text(f"Deduplicated data dir: {os.path.join(output_path, 'out/dedup.jsonl')}")
+            global_logger.log_text(f"Deduplicated data dir: {os.path.join(output_path, 'out/dedup.jsonl')}")
 
 
-def sample_compare_results(settings: dict, logger: Logger):
+def sample_compare_results(settings: dict):
     '''
     step 5: sample few texts from raw data and clean them only by cleaner
     '''
@@ -187,7 +186,6 @@ def sample_compare_results(settings: dict, logger: Logger):
         extract_module=extract_module, 
         clean_module=clean_module, 
         filter_module=filter_module,
-        logger=logger,
         text_key=input_text_key
     )
     dump_jsonls2jsonl(
@@ -196,10 +194,10 @@ def sample_compare_results(settings: dict, logger: Logger):
         keep_text_only=True,
         source_tag=output_source_value
     )
-    logger.log_text(f"Final data dir: {os.path.join(output_path, 'sample_cleaned/tmp.jsonl')}")
+    global_logger.log_text(f"Final data dir: {os.path.join(output_path, 'sample_cleaned/tmp.jsonl')}")
 
 
-def process_work(conf: Settings, logger: Logger, option: int=0):
+def process_work(conf: Settings, option: int=0):
     '''
     @param: 
         option: 
@@ -213,40 +211,40 @@ def process_work(conf: Settings, logger: Logger, option: int=0):
     # nothing to do, warning user
     if not(settings['if_debug'] or settings['if_clean'] or settings['if_filter'] or settings['if_dedup']):
         warning_str = 'Nothing to do, please make sure some options become \'true\' in your setting file.'
-        logger.log_text(warning_str)
+        global_logger.log_text(warning_str)
         return {'warning': warning_str}
     
     if option == 1:
         # if option == and do not debug, the solution is in app.py (do not display the information of debugger)
         if settings['if_debug']:
-            prepare_jsonl_files(settings, logger)
-            sample_debug(settings, logger, 'raw')
+            prepare_jsonl_files(settings)
+            sample_debug(settings, 'raw')
             # only debug, warning user
             if not(settings['if_clean'] or settings['if_filter'] or settings['if_dedup']):
                 warning_str = 'Only debug, please make sure some options become \'true\' in your setting file.'
-                logger.log_text(warning_str)
+                global_logger.log_text(warning_str)
                 return {'warning': warning_str}
     
     elif option == 2:
         # 前端需要处理一下这个部分，如果返回了warning_str，就不显示之后的按钮，只显示warning_str和返回主页面的按钮
         if not(settings['if_clean'] or settings['if_filter'] or settings['if_dedup']):
             warning_str = 'No cleaner, filter and deduplicator, please make sure some options become \'true\' in your setting file.'
-            logger.log_text(warning_str)
+            global_logger.log_text(warning_str)
             return {'warning': warning_str}
         # if not debug, the jsonl files don't be prepared
         if settings['if_debug'] == False:
-            prepare_jsonl_files(settings, logger)
-        refining_process(settings, logger)
+            prepare_jsonl_files(settings)
+        refining_process(settings)
         if settings['if_debug']:        
-            sample_debug(settings, logger, 'refined')
+            sample_debug(settings, 'refined')
         # if no cleaner and no filter, sample_compare_results should not be executed
         if settings['if_clean'] or settings['if_filter']:
-            sample_compare_results(settings, logger)
+            sample_compare_results(settings)
         else:
             return {'if_compare': False}
 
     # preserved the way to execute the entire process using the python command
     elif option == 0:
-        process_work(conf, logger, 1)
-        process_work(conf, logger, 2)
+        process_work(conf, 1)
+        process_work(conf, 2)
 

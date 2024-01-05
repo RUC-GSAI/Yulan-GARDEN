@@ -83,7 +83,7 @@ def sample_debug(settings: dict, logger: Logger, option: str):
     assert option in ['raw', 'refined']
     input_path, input_ext, input_text_key, output_path, output_source_value = settings['input_path'], settings['input_ext'], settings['input_text_key'], settings['output_path'], settings['output_source_value']
     
-    debugger_module = Debugger(settings)
+    debugger_module = Debugger(settings, option)
     work_path = os.path.join(output_path, '.tmp')
 
     # generate debugger report
@@ -249,3 +249,4 @@ def process_work(conf: Settings, logger: Logger, option: int=0):
     elif option == 0:
         process_work(conf, logger, 1)
         process_work(conf, logger, 2)
+

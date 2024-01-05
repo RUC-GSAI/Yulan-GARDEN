@@ -1,10 +1,10 @@
 from utils.settings import *
-from utils.process_new import process_work
+from utils.process import process_work
 from utils.utils.logger import Logger
 import os
 import shutil
 
-def run_zhem_new(conf_path: str, if_force: int, option: int=0):
+def run_zhem(conf_path: str, if_force: int, option: int=0):
     assert option in [0, 1, 2], '@param option must in [0, 1, 2]'
     # load settings
     setting_module = Settings(conf_path)

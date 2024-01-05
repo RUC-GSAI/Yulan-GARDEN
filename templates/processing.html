@@ -70,10 +70,22 @@
                     <pre>{{ret_args['debug_file']}}</pre>
             </details>
             <details>
-                <summary>dirstribution of data</summary>
+                <summary>dirstribution of refined data</summary>
                     {% if ret_args['figs_list']|length > 0 %}
                         <div class="image-container">
                                 {% for fig_path in ret_args['figs_list'] %}
+                                    <div class="col-md-2">
+                                        <img src="{{ fig_path }}" width="305" height="290">
+                                    </div>
+                                {% endfor %}
+                        </div>
+                    {% endif %}
+            </details>
+            <details>
+                <summary>dirstribution of raw data</summary>
+                    {% if ret_args['raw_figs_list']|length > 0 %}
+                        <div class="image-container">
+                                {% for fig_path in ret_args['raw_figs_list'] %}
                                     <div class="col-md-2">
                                         <img src="{{ fig_path }}" width="305" height="290">
                                     </div>

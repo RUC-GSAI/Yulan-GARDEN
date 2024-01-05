@@ -46,13 +46,13 @@ def binary_search(array_list: list, find: float, left: int, right: int) -> list:
     return [left, right]
 
 class Debugger():
-    def __init__(self, setting: Settings=None) -> None:
+    def __init__(self, setting: Settings=None, option: str='raw') -> None:
+        self.fig_path = f'static/{option}_figs/'
         self.cases_num = 3
         self.total_texts = 0
         self.load_settings(setting=setting)
 
-    def load_settings(self, setting: Settings) -> None:
-        self.fig_path = 'static/figs/'
+    def load_settings(self, setting: Settings) -> None:        
         # for filter parameters
         self.debug_paras = setting['debug_paras']
         self.debug_report_path = self.debug_paras['debug_report_path']
@@ -564,6 +564,7 @@ class Debugger():
         colors = cm.Set1(range(len(labels)))
         plt.clf()
         plt.cla()
+        plt.figure(figsize=(6, 6)) 
         plt.pie(sizes, labels=labels, colors=colors, autopct='%.2f%%') 
         plt.legend()
         plt.axis('equal')

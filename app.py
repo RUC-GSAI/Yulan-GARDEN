@@ -312,7 +312,7 @@ def show_config():
 
             if config['if_debug']:
                 # figs_list = get_files_in_folder(os.path.join(config['output_path'], 'figs/'))
-                figs_list = get_files_in_folder('static/figs/')
+                figs_list = get_files_in_folder('static/raw_figs/')
                 with open(config['debug_paras']['debug_report_path'], 'r') as fr:
                     debug_file = json.load(fr)
                 ret_args = {'if_debug': True, 'debug_path': config['debug_paras']['debug_report_path'], 'figs_list': figs_list, 'debug_file': json.dumps(debug_file, indent=4, ensure_ascii=False)}
@@ -420,10 +420,11 @@ def processing():
                 config = json.load(fr)
             if config['if_debug']:
                 # figs_list = get_files_in_folder(os.path.join(config['output_path'], 'figs/'))
-                figs_list = get_files_in_folder('static/figs/')
+                figs_list = get_files_in_folder('static/refined_figs/')
+                raw_figs_list = get_files_in_folder('static/raw_figs/')
                 with open(config['debug_paras']['debug_report_path'], 'r') as fr:
                     debug_file = json.load(fr)
-                ret_args = {'if_debug': True, 'debug_path': config['debug_paras']['debug_report_path'], 'figs_list': figs_list, 'debug_file': json.dumps(debug_file, indent=4, ensure_ascii=False)}
+                ret_args = {'if_debug': True, 'debug_path': config['debug_paras']['debug_report_path'], 'figs_list': figs_list, 'raw_figs_list': raw_figs_list, 'debug_file': json.dumps(debug_file, indent=4, ensure_ascii=False)}
             else:
                 ret_args = {'if_debug': False}   
             # # sample texts from 'input_path', return the sample list and refined list

@@ -1,5 +1,5 @@
 from utils.evaluator.evaluator_base import EvaluatorBase
-from utils.utils import KenlmModel
+from utils.utils.kenlm_model import KenlmModel
 
 from collections import defaultdict
 

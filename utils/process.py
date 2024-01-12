@@ -9,11 +9,12 @@ from utils.utils import *
 
 import os   
 
-def process_work_mult_threads(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str):
-    process_parallel_works(work_path, output_path, extract_module, clean_module, filter_module, parallel_paras, text_key)
+def process_work_mult_threads(work_path: str, output_path: str, parallel_paras, text_key: str):
+    process_parallel_works(work_path, output_path, parallel_paras, text_key)
 
-def process_work_single_thread(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, text_key: str="text", input_ext: str='jsonl'):
+def process_work_single_thread(work_path: str, output_path: str, text_key: str="text", input_ext: str='jsonl'):
     if not os.path.exists(output_path): os.makedirs(output_path, exist_ok=True)
+
     for file in tqdm(prepare_works(work_path, input_ext=input_ext), desc='Process work single thread'):
         filename = os.path.basename(file)
         nwork_in = os.path.join(work_path, file)
@@ -26,18 +27,22 @@ def process_work_single_thread(work_path: str, output_path: str, extract_module:
         with open(nwork_in, mode='r', encoding='utf-8') as fr, open(nwork_out, mode='w', encoding='utf-8') as fw:
             for line in fr:
                 nrecord = json.loads(line)
-                text = process_single_text(nrecord[text_key], extract_module, clean_module, filter_module)
+                text = process_single_text(nrecord[text_key])
                 if text != "":
                     nrecord[text_key] = text
                     fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')
         # except Exception as ne:
             # print(f"Bad work {nwork_in} for Exception {ne}")
 
-def process_single_text(text: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter) -> str:
+def process_single_text(text: str) -> str:
     '''
     Return "" (an empty string) means the text is Filtered.
     Else return an extracted and cleaned module
     '''
+    extract_module = modulemanager.extract_module
+    clean_module = modulemanager.clean_module
+    filter_module = modulemanager.filter_module
+
     text = extract_module.extract(text)
     if filter_module.filter_single_text(text):
         return ""
@@ -112,9 +117,7 @@ def refining_process(settings: dict):
     work_path = os.path.join(output_path, '.tmp')
 
     # load settings for modules
-    extract_module = Extractor(setting=settings)
-    clean_module = Cleaner(setting=settings)
-    filter_module = Filter(setting=settings)
+    modulemanager.load_modules(settings=settings)
 
     if settings['if_filter'] or settings['if_clean']:
         # do work and calculate work statistics
@@ -124,9 +127,6 @@ def refining_process(settings: dict):
             process_work_mult_threads(
                 work_path=work_path, 
                 output_path=os.path.join(output_path, '.cleaned'), 
-                extract_module=extract_module, 
-                clean_module=clean_module, 
-                filter_module=filter_module, 
                 parallel_paras=parallel_paras,
                 text_key=input_text_key,
             )
@@ -141,9 +141,6 @@ def refining_process(settings: dict):
             process_work_single_thread(
                 work_path=work_path, 
                 output_path=os.path.join(output_path, '.cleaned'), 
-                extract_module=extract_module, 
-                clean_module=clean_module, 
-                filter_module=filter_module,
                 text_key=input_text_key
             )
             dump_jsonls2jsonl(
@@ -173,19 +170,16 @@ def sample_compare_results(settings: dict):
         'if_sample_randomly': True,
         'SAMPLE_RANDOMLY_NUM': 10}
     sampler = Sampler(SampleConfig(sampler_config))
-    sampler.sample_randomly_works()  
+    sampler.sample_randomly_works()
+
     # load settings for modules
-    extract_module = Extractor(setting=settings)
-    clean_module = Cleaner(setting=settings)
-    filter_module = Filter(setting=settings)
+    modulemanager.load_modules(settings=settings)
+
     # we need to compare the difference of raw and refined texts
     settings['if_filter'] = False
     process_work_single_thread(
         work_path=os.path.join(output_path, 'presentation.jsonl'), 
         output_path=os.path.join(output_path, '.sample_cleaned'), 
-        extract_module=extract_module, 
-        clean_module=clean_module, 
-        filter_module=filter_module,
         text_key=input_text_key
     )
     dump_jsonls2jsonl(

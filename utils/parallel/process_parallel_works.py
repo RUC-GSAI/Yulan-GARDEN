@@ -7,7 +7,7 @@ from tqdm import tqdm
 from utils.settings import *
 
 from utils.workers import *
-from utils.utils import prepare_works
+from utils.utils import prepare_works, modulemanager
 
 def _now_timestamp():
     from datetime import datetime
@@ -17,11 +17,15 @@ def _split_into_chunks(works: list, pieces: int) -> list:
     pieces = max(1, pieces)
     return [works[i: i + pieces] for i in range(0, len(works), pieces)]
 
-def _process_single_text(text: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter) -> str:
+def _process_single_text(text: str) -> str:
     '''
     Return "" (an empty string) means the text is Filtered.
     Else return an extracted and cleaned module
     '''
+    extract_module = modulemanager.extract_module
+    clean_module = modulemanager.clean_module
+    filter_module = modulemanager.filter_module
+
     text = extract_module.extract(text)
     if filter_module.filter_single_text(text):
         return ""
@@ -30,7 +34,7 @@ def _process_single_text(text: str, extract_module: Extractor, clean_module: Cle
         return ""    
     return text
 
-def _process_single_work(work_path: str, output_path: str, modules: dict, text_key: str="text") -> int:
+def _process_single_work(work_path: str, output_path: str, text_key: str="text") -> int:
     '''
     Return tot_cnt, succ_cnt if the process runs successfully.
     '''
@@ -40,15 +44,14 @@ def _process_single_work(work_path: str, output_path: str, modules: dict, text_k
     if not os.path.exists(output_path): os.makedirs(output_path, exist_ok=True)
     fname, fext = os.path.splitext(ifname)
     ofile_path = os.path.join(output_path, f'{_now_timestamp()}-{fname}.{fext}')
-    # prepare modules
-    extract_module, clean_module, filter_module= modules['exm'], modules['clm'], modules['fim']
+
     # do single work
     with open(ifile_path, mode='r', encoding='utf-8') as fr, open(ofile_path, mode='w', encoding='utf-8') as fw:
         for line in fr:
             try:
                 tot_cnt += 1
                 nrecord = json.loads(line)
-                text = _process_single_text(nrecord[text_key], extract_module, clean_module, filter_module)
+                text = _process_single_text(nrecord[text_key])
                 if text != "":
                     nrecord[text_key] = text
                     fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')
@@ -58,12 +61,11 @@ def _process_single_work(work_path: str, output_path: str, modules: dict, text_k
                 print(f'Exception for Bad File at {ifile_path} for {ne}\n')
     return (tot_cnt, succ_cnt)
 
-def process_parallel_works(work_path: str, output_path: str, extract_module: Extractor, clean_module: Cleaner, filter_module: Filter, parallel_paras, text_key: str):
+def process_parallel_works(work_path: str, output_path: str, parallel_paras, text_key: str):
     # Prepare parameters
     n_process = cpu_count() - 1 if parallel_paras['n_process'] <= 1 else parallel_paras['n_process'] - 1
     chunk_size = n_process * 3 if parallel_paras['chunk_size'] <= 0 else parallel_paras['chunk_size']
     pool = Pool(n_process)
-    modules = {"exm": extract_module, "clm": clean_module, "fim": filter_module}
     assert(n_process > 0 and chunk_size > 0)
 
     # Prepare works
@@ -80,7 +82,7 @@ def process_parallel_works(work_path: str, output_path: str, extract_module: Ext
             @  zip(<params pass to function @process_single_work>) packed as a zip
         '''
         works_out = pool.starmap(_process_single_work, 
-                                 zip(chunk, [output_path] * len(chunk), [modules] * len(chunk), [text_key] * len(chunk)))
+                                 zip(chunk, [output_path] * len(chunk), [text_key] * len(chunk)))
         for each in works_out:
             tot_cnt, succ_cnt = tot_cnt + each[0], succ_cnt + each[1]
         success_rate = succ_cnt / tot_cnt

@@ -6,21 +6,23 @@ import re
 class Filter:
     def __init__(self, setting: Settings=None) -> None:
         self.filter_setting = {}
-        self.load_settings(setting=setting)
         self.num = 0
-        self.filter_ops = {
-            "FilterPassageByCopyright": FilterPassageByCopyright(),
-            "FilterPassageByDirtyWords": FilterPassageByDirtyWords(),
-            "FilterPassageByLangs": FilterPassageByLangs(),
-            "FilterPassageByLangScore": FilterPassageByLangScore(),
-            "FilterPassageByLength": FilterPassageByLength(),
-            # ppl need a parameter {{input_path}} to initialize
-            # "FilterPassageByPPL": FilterPassageByPPL(),
-            "FilterPassageByProportionOfAlphaNumber": FilterPassageByProportionOfAlphaNumber(),
-            "FilterPassageByProportionOfNonChineseChars": FilterPassageByProportionOfNonChineseChars(),
-            "FilterPassageByProportionofShortline": FilterPassageByProportionofShortline(),
-            "FilterPassageBySelfDefinedFunctions": FilterPassageBySelfDefinedFunctions()
-        }
+        
+        if setting:
+            self.load_settings(setting=setting)
+            self.filter_ops = {
+                "FilterPassageByCopyright": FilterPassageByCopyright(),
+                "FilterPassageByDirtyWords": FilterPassageByDirtyWords(),
+                "FilterPassageByLangs": FilterPassageByLangs(),
+                "FilterPassageByLangScore": FilterPassageByLangScore(),
+                "FilterPassageByLength": FilterPassageByLength(),
+                # ppl need a parameter {{input_path}} to initialize
+                # "FilterPassageByPPL": FilterPassageByPPL(),
+                "FilterPassageByProportionOfAlphaNumber": FilterPassageByProportionOfAlphaNumber(),
+                "FilterPassageByProportionOfNonChineseChars": FilterPassageByProportionOfNonChineseChars(),
+                "FilterPassageByProportionofShortline": FilterPassageByProportionofShortline(),
+                "FilterPassageBySelfDefinedFunctions": FilterPassageBySelfDefinedFunctions()
+            }
 
     def load_settings(self, setting: Settings) -> None:
         self.if_filter = setting.get('if_filter', False)

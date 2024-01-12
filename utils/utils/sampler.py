@@ -178,5 +178,37 @@ if __name__ == '__main__':
     # import matplotlib.pyplot as plt
     # from matplotlib import cm
 
-    a = {'mynio': 5, 1: 7}
-    print('hades' in a)
+    import os
+
+    file_path = "/fs/archive/share/u2022101014/data/openwebtext2/sample/raw.jsonl"
+    output_path = "/fs/archive/share/u2022101014/data/openwebtext2/sample/raw_new.jsonl"
+    target_size = 1024 * 1024 * 1024  # 1GB
+    # target_size = 1024 * 1024
+
+    total_size = 0
+    num_lines = 0
+    lines = []
+
+    with open(file_path, "r") as file, open(output_path, "w") as fw:
+        while total_size <= target_size:
+            line = file.readline()
+            if not line:
+                break
+
+            # lines.append(line)
+            
+            total_size += len(line.encode())
+
+            if total_size > target_size:
+                break
+
+            fw.write(line)
+            num_lines += 1
+
+    # 打印读取的行数和累计数据大小
+    # print("读取的行数:", len(lines))
+    print("累计数据大小:", total_size)
+    print(num_lines)
+
+    # 处理读取到的行数据
+    # ...

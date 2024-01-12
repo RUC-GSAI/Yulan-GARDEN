@@ -5,19 +5,21 @@ from utils.utils.my_funcs import *
 class Cleaner():
     def __init__(self, setting: Settings=None) -> None:
         self.clean_setting = {}
-        self.load_settings(setting=setting)
-        self.cleaner_ops = {
-            "CleanerRemoveLineByRegExp": CleanerRemoveLineByRegExp(),
-            "CleanerRemoveLineByText": CleanerRemoveLineByText(),
-            "CleanerRemovePassageInvisbleChars": CleanerRemovePassageInvisbleChars(),
-            "CleanerRemovePassageNewline": CleanerRemovePassageNewline(),
-            "CleanerRemovePassageRegExp": CleanerRemovePassageRegExp(),
-            "CleanerRemovePassageBySegment": CleanerRemovePassageBySegment(),
-            "CleanerRemovePassageText": CleanerRemovePassageText(),
-            "CleanerSubstitutePassageRegExp": CleanerSubstitutePassageRegExp(),
-            "CleanerSubstitutePassageBySelfDefinedFunctions": CleanerSubstitutePassageBySelfDefinedFunctions(),
-            "CleanerSubstitutePassageSimplifiedChinese": CleanerSubstitutePassageSimplifiedChinese(),
-        }
+        
+        if setting:
+            self.load_settings(setting=setting)
+            self.cleaner_ops = {
+                "CleanerRemoveLineByRegExp": CleanerRemoveLineByRegExp(),
+                "CleanerRemoveLineByText": CleanerRemoveLineByText(),
+                "CleanerRemovePassageInvisbleChars": CleanerRemovePassageInvisbleChars(),
+                "CleanerRemovePassageNewline": CleanerRemovePassageNewline(),
+                "CleanerRemovePassageRegExp": CleanerRemovePassageRegExp(),
+                "CleanerRemovePassageBySegment": CleanerRemovePassageBySegment(),
+                "CleanerRemovePassageText": CleanerRemovePassageText(),
+                "CleanerSubstitutePassageRegExp": CleanerSubstitutePassageRegExp(),
+                "CleanerSubstitutePassageBySelfDefinedFunctions": CleanerSubstitutePassageBySelfDefinedFunctions(),
+                "CleanerSubstitutePassageSimplifiedChinese": CleanerSubstitutePassageSimplifiedChinese(),
+            }
 
     def load_settings(self, setting: Settings) -> None:
         self.if_clean = setting.get('if_clean', False)

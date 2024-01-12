@@ -1,4 +1,4 @@
-from utils.utils import *
+from utils.utils.dumper import *
 from utils.rules import *
 
 def reformat_everything2jsonl(input_ext: str, input_path: str, output_path: str, output_source_value: str):

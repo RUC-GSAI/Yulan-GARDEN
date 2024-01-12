@@ -6,7 +6,9 @@ from bs4 import BeautifulSoup
 class Extractor:
     def __init__(self, setting: Settings=None) -> None:
         self.extract_setting = {}
-        self.load_settings(setting=setting)
+        
+        if setting:
+            self.load_settings(setting=setting)
 
     def load_settings(self, setting: Settings) -> None:
         self.extract_setting = setting['clean_paras']['extractor']

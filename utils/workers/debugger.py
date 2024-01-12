@@ -356,10 +356,14 @@ class Debugger():
         if os.path.exists(self.fig_path): 
             rmtree(self.fig_path)
         os.makedirs(self.fig_path, exist_ok=True)
-        self._pie_chart(self.langs, os.path.join(self.fig_path, 'langs.png'), 'languages distribution')
-        self._histogram(self.texts_length, os.path.join(self.fig_path, 'lengths.png'), 'lengths distribution')
-        for lang in self.ppl:
-            self._histogram(self.ppl[lang], os.path.join(self.fig_path, 'ppl_{}.png'.format(lang)), 'ppl of {}'.format(lang))
+
+        if self.debug_langs['use']:
+            self._pie_chart(self.langs, os.path.join(self.fig_path, 'langs.svg'), 'languages distribution')
+        if self.debug_short_texts:
+            self._histogram(self.texts_length, os.path.join(self.fig_path, 'lengths.svg'), 'lengths distribution')
+            if self.debug_ppl['use']:
+                for lang in self.ppl:
+                    self._histogram(self.ppl[lang], os.path.join(self.fig_path, 'ppl_{}.svg'.format(lang)), 'ppl of {}'.format(lang))
 
         data = {'texts_length': dic_length, 'langs': dic_langs, 'ppls': dic_ppl, 'short_texts': {'info': info_short_texts, 'param: filter ratio': dic_short_texts}, 'non_ch': {'info': info_non_ch, 'param: filter ratio': dic_non_ch}, 'short_lines': {'info': info_short_lines, 'param: filter ratio': dic_short_lines}}
         return data
@@ -569,7 +573,7 @@ class Debugger():
         plt.legend()
         plt.axis('equal')
         plt.title(title, y=0.95)
-        plt.savefig(fig_path)
+        plt.savefig(fig_path, transparent=True)
 
     def _histogram(self, data: list, fig_path: str, title: str) -> None:
         if os.path.exists(fig_path): os.remove(fig_path)
@@ -581,6 +585,6 @@ class Debugger():
         plt.title(title, y=0.95)
         # plt.xlabel('Value')
         # plt.ylabel('Frequency')
-        plt.savefig(fig_path)
+        plt.savefig(fig_path, transparent=True)
 
 

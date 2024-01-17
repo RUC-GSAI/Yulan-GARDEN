@@ -14,7 +14,8 @@ class Cleaner():
                 "CleanerRemovePassageInvisbleChars": CleanerRemovePassageInvisbleChars(),
                 "CleanerRemovePassageNewline": CleanerRemovePassageNewline(),
                 "CleanerRemovePassageRegExp": CleanerRemovePassageRegExp(),
-                "CleanerRemovePassageBySegment": CleanerRemovePassageBySegment(),
+                "CleanerRemoveSegmentByText": CleanerRemoveSegmentByText(),
+                "CleanerRemoveSegmentByRegExp": CleanerRemoveSegmentByRegExp(),
                 "CleanerRemovePassageText": CleanerRemovePassageText(),
                 "CleanerSubstitutePassageRegExp": CleanerSubstitutePassageRegExp(),
                 "CleanerSubstitutePassageBySelfDefinedFunctions": CleanerSubstitutePassageBySelfDefinedFunctions(),
@@ -34,6 +35,7 @@ class Cleaner():
         self.rm_re_lines = self.clean_setting['rm_re_lines']['re_list'] if self.clean_setting['rm_re_lines']['use'] else []
         self.rm_str_lines = self.clean_setting['rm_str_lines']['str_list'] if self.clean_setting['rm_str_lines']['use'] else []
         self.rm_str_seg = self.clean_setting['rm_str_seg']['str_list'] if self.clean_setting['rm_str_seg']['use'] else []
+        self.rm_re_seg = self.clean_setting['rm_re_seg']['re_list'] if self.clean_setting['rm_re_seg']['use'] else []
         self.tra2sim = self.clean_setting['tra2sim']
 
     def clean_single_text(self, text: str) -> str:
@@ -58,7 +60,10 @@ class Cleaner():
                 text = self.cleaner_ops['CleanerRemovePassageText'].clean_single_text(text, rm_str)
         if len(self.rm_str_seg) > 0:
             for rm_str in self.rm_str_seg:
-                text = self.cleaner_ops['CleanerRemovePassageBySegment'].clean_single_text(text, rm_str)
+                text = self.cleaner_ops['CleanerRemoveSegmentByText'].clean_single_text(text, rm_str)
+        if len(self.rm_re_seg) > 0:
+            for rm_re in self.rm_re_seg:
+                text = self.cleaner_ops['CleanerRemoveSegmentByRegExp'].clean_single_text(text, rm_re)
         if len(self.rm_str_lines) > 0:
             text = self.cleaner_ops['CleanerRemoveLineByText'].clean_single_text(text, self.rm_str_lines)
         if len(self.rm_re_lines) > 0:

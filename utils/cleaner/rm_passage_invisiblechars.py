@@ -14,7 +14,7 @@ class CleanerRemovePassageInvisbleChars(CleanerBase):
         \u2000-\u200f: invisible 
         '''
         patterns = ['\b', '\u034f', '\u061c', '\u115f', '\u1160', '\u17b4', '\u17b5', 
-                    '\xa0', '\u3000', '\u2800', '&nbsp', '$nbsp']
+                    '\xa0', '\u3000', '\u2800', '&nbsp', '$nbsp', '&gt;']
         for pattern in patterns:
             text = self._rm_text(text, pattern)
 

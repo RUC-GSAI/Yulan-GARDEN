@@ -3,7 +3,8 @@ from utils.cleaner.rm_line_text import CleanerRemoveLineByText
 from utils.cleaner.rm_passage_invisiblechars import CleanerRemovePassageInvisbleChars
 from utils.cleaner.rm_passage_newline import CleanerRemovePassageNewline
 from utils.cleaner.rm_passage_regexp import CleanerRemovePassageRegExp
-from utils.cleaner.rm_passage_segment import CleanerRemovePassageBySegment
+from utils.cleaner.rm_segment_text import CleanerRemoveSegmentByText
+from utils.cleaner.rm_segment_regexp import CleanerRemoveSegmentByRegExp
 from utils.cleaner.rm_passage_text import CleanerRemovePassageText
 from utils.cleaner.sub_passage_email import CleanerSubstitutePassageEmail
 from utils.cleaner.sub_passage_idcard import CleanerSubstitutePassageIDCard

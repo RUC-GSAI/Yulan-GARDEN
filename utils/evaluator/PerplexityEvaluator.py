@@ -3,7 +3,7 @@ from utils.utils.kenlm_model import KenlmModel
 
 from collections import defaultdict
 
-import os
+from typing import Union
 
 class PerplexityEvaluator(EvaluatorBase):
     '''
@@ -39,5 +39,7 @@ class PerplexityEvaluator(EvaluatorBase):
         else:
             self.models = None
 
-    def evaluate_single_text(self, text: str, lang: str = "en") -> float:
-        return self.models[lang].get_perplexity(text)
+    def evaluate_single_text(self, text: str, lang: str = "en") -> Union[float, None]:
+        if lang in self.langs:
+            return self.models[lang].get_perplexity(text)
+        return None

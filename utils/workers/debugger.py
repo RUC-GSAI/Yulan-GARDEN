@@ -5,8 +5,7 @@ import re
 import numpy as np
 import json
 import time
-import logging
-from datetime import datetime
+from typing import Union
 from statistics import mean, variance
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -160,7 +159,7 @@ class Debugger():
             for rule in self.debug_rm_str_seg:
                 self.rm_str_seg[rule] = {'match ratio': 0, 'avg time': 0, 'cases': set()}
 
-    def debug_params_report(self) -> None:
+    def debug_params_report(self) -> Union[dict, None]:
         '''
         After debug all the texts, 
         output a debug report about different values of changable parameters with different filter ratios.
@@ -235,6 +234,10 @@ class Debugger():
         '''
         with open(self.debug_report_path, 'w', encoding='utf-8') as fw:
             json.dump(report, fw, indent=4, ensure_ascii=False)
+        
+        if self.ppl:
+            return self.ppl
+        return None
     
     def debug_single_text(self, text: str) -> None:
         '''
@@ -281,7 +284,7 @@ class Debugger():
             percentage_lang = {lang: count/self.total_texts for lang, count in self.langs.items()}
 
         # some variables for output report
-        dic_short_texts, dic_non_ch, dic_short_lines, dic_langs, dic_ppl = {}, {}, {}, {}, {}
+        dic_short_texts, dic_non_ch, dic_short_lines, dic_length, dic_langs, dic_ppl = {}, {}, {}, {}, {}, {}
         info_short_texts, info_non_ch, info_short_lines = '', '', ''
         # short_texts
         if self.debug_short_texts['use']:
@@ -348,19 +351,26 @@ class Debugger():
         if self.debug_langs['use']:
             dic_langs = {lang: '{:.2%}'.format(percentage) for lang, percentage in percentage_lang.items()}
             if self.debug_ppl['use']:
-                dic_ppl = {lang: {'mean': '{:.2f}'.format(mean(ppl_list)), 'var': '{:.2f}'.format(variance(ppl_list))} for lang, ppl_list in self.ppl.items()}
-        
-        dic_length = {'mean': '{:.2f}'.format(mean(self.texts_length)), 'var': '{:.2f}'.format(variance(self.texts_length))}
+                dic_ppl = {}
+                for lang, ppl_list in self.ppl.items():
+                    if len(ppl_list) > 1:
+                        dic_ppl[lang] = {'mean': round(mean(ppl_list), 2), 'var': round(variance(ppl_list), 2)}
+                    else:
+                        dic_ppl[lang] = {'mean': round(mean(ppl_list), 2), 'var': None}
+            if len(self.texts_length) > 1:  
+                dic_length = {'mean': round(mean(self.texts_length)), 'var': round(variance(self.texts_length))}
+            else:
+                dic_length = {'mean': round(mean(self.texts_length)), 'var': None}
 
         # draw figures
         if os.path.exists(self.fig_path): 
             rmtree(self.fig_path)
         os.makedirs(self.fig_path, exist_ok=True)
 
-        if self.debug_langs['use']:
-            self._pie_chart(self.langs, os.path.join(self.fig_path, 'langs.svg'), 'languages distribution')
-        if self.debug_short_texts:
+        if self.debug_short_texts['use']:
             self._histogram(self.texts_length, os.path.join(self.fig_path, 'lengths.svg'), 'lengths distribution')
+        if self.debug_langs['use']:
+            self._pie_chart(self.langs, os.path.join(self.fig_path, 'langs.svg'), 'languages distribution')        
             if self.debug_ppl['use']:
                 for lang in self.ppl:
                     self._histogram(self.ppl[lang], os.path.join(self.fig_path, 'ppl_{}.svg'.format(lang)), 'ppl of {}'.format(lang))
@@ -478,7 +488,8 @@ class Debugger():
         if lang not in self.ppl:
             self.ppl[lang] = []
         ppl = self.perplexityEvaluator.evaluate_single_text(text, lang)
-        self.ppl[lang].append(ppl)
+        if ppl:
+            self.ppl[lang].append(ppl)
         
     def _debug_find_cases(self, text: str) -> None:
         '''

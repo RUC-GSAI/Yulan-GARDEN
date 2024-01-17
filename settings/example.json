@@ -24,6 +24,9 @@
             "use": false,
             "accept_lang_list": ["en", "zh"]
         },
+        "fil_ppl": {
+            "use": false
+        },
         "fil_lang_score": {
             "use": false,
             "reject_threshold": 0.5
@@ -66,7 +69,7 @@
             }
         }
     },
-    "if_clean": true,
+    "if_clean": false,
     "clean_paras": {
         "extractor": {
             "use": false,
@@ -77,7 +80,7 @@
         },
         "my_funcs": {
             "comments": "To make ZHEM more flexible, we have added a new cleaning interface that allows users to add custom cleaning functions to 'utils/utils/my_funcs.py'.",
-            "use": true,
+            "use": false,
             "funcs": [
                 "for_bdbk"
             ]
@@ -123,8 +126,14 @@
         },
         "rm_str_seg": {
             "comments": "remove **a segment** after matching any of **string** in `str_list` if any text fragments in this text are matched",
-            "use": true,
+            "use": false,
             "str_list": [
+            ]
+        },
+        "rm_re_seg": {
+            "comments": "remove **a segment** after matching any of **string** in `re_list` if any text fragments in this text are matched",
+            "use": false,
+            "re_list": [
             ]
         },
         "tra2sim": {
@@ -132,7 +141,7 @@
             "target": "zh-cn"
         }
     },
-    "if_dedup": true,
+    "if_dedup": false,
     "dedup_paras": {
         "language": "zh",
         "ngram": 5,
@@ -140,7 +149,7 @@
         "min_length": 20,
         "threshold": 0.7
     },
-    "if_parallel": true,
+    "if_parallel": false,
     "parallel_paras": {
         "comments": "it means if the input data is already cut into pieces",
         "if_cut": false,
@@ -148,38 +157,38 @@
         "n_process": 10,
         "chunk_size": -1
     },
-    "if_debug": true,
+    "if_debug": false,
     "debug_paras": {
         "debug_report_path": "debug_report/debug_report.json",
         "debug_cases_num": 5,
         "debug_sample_num_per_file": 100,  
         "debug_find_cases": {
-            "use" : true,
+            "use" : false,
             "words": [
                 
             ]
         },
         "debug_short_texts": {
-            "use" : true,
+            "use" : false,
             "length": 200,
             "if_fix_fil_ratio": false,
             "exp_fil_ratio": 0.05
         },
         "debug_non_ch": {
-            "use": true,
+            "use": false,
             "if_fix_fil_ratio": false,
             "exp_fil_ratio": 0.05
         },
         "debug_short_lines": {
-            "use": true,
+            "use": false,
             "if_fix_fil_ratio": false,
             "exp_fil_ratio": 0.05
         },
         "debug_langs": {
-            "use": true
+            "use": false
         },
         "debug_ppl": {
-            "use": true
+            "use": false
         }
     }
 }

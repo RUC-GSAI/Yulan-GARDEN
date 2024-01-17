@@ -7,14 +7,17 @@ from tqdm import tqdm
 
 from utils.utils import *
 
+# from utils.utils.load_modules import modulemanager
+
 import os   
+
+from ast import literal_eval
 
 def process_work_mult_threads(work_path: str, output_path: str, parallel_paras, text_key: str):
     process_parallel_works(work_path, output_path, parallel_paras, text_key)
 
 def process_work_single_thread(work_path: str, output_path: str, text_key: str="text", input_ext: str='jsonl'):
     if not os.path.exists(output_path): os.makedirs(output_path, exist_ok=True)
-
     for file in tqdm(prepare_works(work_path, input_ext=input_ext), desc='Process work single thread'):
         filename = os.path.basename(file)
         nwork_in = os.path.join(work_path, file)
@@ -27,14 +30,15 @@ def process_work_single_thread(work_path: str, output_path: str, text_key: str="
         with open(nwork_in, mode='r', encoding='utf-8') as fr, open(nwork_out, mode='w', encoding='utf-8') as fw:
             for line in fr:
                 nrecord = json.loads(line)
-                text = process_single_text(nrecord[text_key])
-                if text != "":
+                text, label = process_single_text(nrecord[text_key])
+                # when label is False (no filter), the text is writen in nrecord whether the text is null
+                if label == False:
                     nrecord[text_key] = text
                     fw.write(json.dumps(nrecord, ensure_ascii=False) + '\n')
         # except Exception as ne:
             # print(f"Bad work {nwork_in} for Exception {ne}")
 
-def process_single_text(text: str) -> str:
+def process_single_text(text: str) -> [str, bool]:
     '''
     Return "" (an empty string) means the text is Filtered.
     Else return an extracted and cleaned module
@@ -45,11 +49,11 @@ def process_single_text(text: str) -> str:
 
     text = extract_module.extract(text)
     if filter_module.filter_single_text(text):
-        return ""
+        return "", True
     text = clean_module.clean_single_text(text)
     if filter_module.filter_single_text(text):
-        return ""    
-    return text
+        return "", True
+    return text, False
 
 def prepare_jsonl_files(settings: dict):
     '''
@@ -104,10 +108,14 @@ def sample_debug(settings: dict, option: str):
         cnt = 0
         for line in fr:
             cnt += 1
-            text = json.loads(line)[input_text_key]
+            # text = json.loads(line)[input_text_key]
+            text = literal_eval(line)[input_text_key]
             debugger_module.debug_single_text(text)
-    debugger_module.debug_params_report()
+    ppls = debugger_module.debug_params_report()
     global_logger.log_text(f"for {option} data: generating debug report {debugger_module.debug_report_path} finish..")
+    if ppls:
+        modulemanager.filter_module.filter_ops['FilterPassageByPPL'].calc_filter_threshold(ppls)
+    print(f"!!!!!!{modulemanager.filter_module.filter_ops['FilterPassageByPPL'].ppl_filter_thresholds}")
 
 def refining_process(settings: dict):
     '''
@@ -115,9 +123,6 @@ def refining_process(settings: dict):
     '''
     input_path, input_ext, input_text_key, output_path, output_source_value = settings['input_path'], settings['input_ext'], settings['input_text_key'], settings['output_path'], settings['output_source_value']
     work_path = os.path.join(output_path, '.tmp')
-
-    # load settings for modules
-    modulemanager.load_modules(settings=settings)
 
     if settings['if_filter'] or settings['if_clean']:
         # do work and calculate work statistics
@@ -202,6 +207,9 @@ def process_work(conf: Settings, option: int=0):
     settings = conf.settings
     input_path, input_ext, input_text_key, output_path, output_source_value = settings['input_path'], settings['input_ext'], settings['input_text_key'], settings['output_path'], settings['output_source_value']
 
+    # load settings for modules
+    modulemanager.load_modules(settings=settings)
+
     # nothing to do, warning user
     if not(settings['if_debug'] or settings['if_clean'] or settings['if_filter'] or settings['if_dedup']):
         warning_str = 'Nothing to do, please make sure some options become \'true\' in your setting file.'
@@ -218,8 +226,12 @@ def process_work(conf: Settings, option: int=0):
                 warning_str = 'Only debug, please make sure some options become \'true\' in your setting file.'
                 global_logger.log_text(warning_str)
                 return {'warning': warning_str}
+        with open(os.path.join(output_path, 'bound.json'), 'w') as fw:
+            json.dump(modulemanager.filter_module.filter_ops["FilterPassageByPPL"].ppl_filter_thresholds, fw)
     
-    elif option == 2:
+    elif option == 2: 
+        print(f"!!!!!!{modulemanager.filter_module.filter_ops['FilterPassageByPPL'].ppl_filter_thresholds}")
+
         # 前端需要处理一下这个部分，如果返回了warning_str，就不显示之后的按钮，只显示warning_str和返回主页面的按钮
         if not(settings['if_clean'] or settings['if_filter'] or settings['if_dedup']):
             warning_str = 'No cleaner, filter and deduplicator, please make sure some options become \'true\' in your setting file.'
@@ -236,9 +248,36 @@ def process_work(conf: Settings, option: int=0):
             sample_compare_results(settings)
         else:
             return {'if_compare': False}
+        
+        bound_path = os.path.join(output_path, 'bound.json')
+        if os.path.exists(bound_path):
+            os.remove(bound_path)
+        
 
     # preserved the way to execute the entire process using the python command
     elif option == 0:
-        process_work(conf, 1)
-        process_work(conf, 2)
+        # if option == and do not debug, the solution is in app.py (do not display the information of debugger)
+        if settings['if_debug']:
+            prepare_jsonl_files(settings)
+            sample_debug(settings, 'raw')
+            # only debug, warning user
+            if not(settings['if_clean'] or settings['if_filter'] or settings['if_dedup']):
+                warning_str = 'Only debug, please make sure some options become \'true\' in your setting file.'
+                global_logger.log_text(warning_str)
+                return {'warning': warning_str}
+        if not(settings['if_clean'] or settings['if_filter'] or settings['if_dedup']):
+            warning_str = 'No cleaner, filter and deduplicator, please make sure some options become \'true\' in your setting file.'
+            global_logger.log_text(warning_str)
+            return {'warning': warning_str}
+        # if not debug, the jsonl files don't be prepared
+        if settings['if_debug'] == False:
+            prepare_jsonl_files(settings)
+        refining_process(settings)
+        if settings['if_debug']:        
+            sample_debug(settings, 'refined')
+        # if no cleaner and no filter, sample_compare_results should not be executed
+        if settings['if_clean'] or settings['if_filter']:
+            sample_compare_results(settings)
+        else:
+            return {'if_compare': False}
 

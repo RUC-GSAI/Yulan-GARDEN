@@ -1,7 +1,7 @@
 from utils.filter import *
 from utils.settings import *
 from utils.utils.my_rules import *
-import re
+import os
 
 class Filter:
     def __init__(self, setting: Settings=None) -> None:
@@ -17,7 +17,7 @@ class Filter:
                 "FilterPassageByLangScore": FilterPassageByLangScore(),
                 "FilterPassageByLength": FilterPassageByLength(),
                 # ppl need a parameter {{input_path}} to initialize
-                # "FilterPassageByPPL": FilterPassageByPPL(),
+                "FilterPassageByPPL": FilterPassageByPPL(self.input_path, os.path.join(self.output_path, 'sample.jsonl'), os.path.join(self.output_path, 'bound.json')),
                 "FilterPassageByProportionOfAlphaNumber": FilterPassageByProportionOfAlphaNumber(),
                 "FilterPassageByProportionOfNonChineseChars": FilterPassageByProportionOfNonChineseChars(),
                 "FilterPassageByProportionofShortline": FilterPassageByProportionofShortline(),
@@ -26,12 +26,15 @@ class Filter:
 
     def load_settings(self, setting: Settings) -> None:
         self.if_filter = setting.get('if_filter', False)
+        self.input_path = setting['input_path']
+        self.output_path = setting['output_path']
         self.filter_setting = setting['filter_paras']
 
         self.fil_my_rules = self.filter_setting['fil_my_rules']
         self.fil_dirty_words = self.filter_setting['fil_dirty_words']
         self.fil_langs = self.filter_setting['fil_langs']
         self.fil_lang_score = self.filter_setting['fil_lang_score']
+        self.fil_ppl = self.filter_setting['fil_ppl']
         self.fil_short_texts = self.filter_setting['fil_short_texts']
         self.fil_non_ch = self.filter_setting['fil_non_ch']
         self.fil_alphanum = self.filter_setting['fil_alphanum']
@@ -69,7 +72,13 @@ class Filter:
                 accept_lang_list=self.fil_langs['accept_lang_list']
             ):
                 return True
-            
+        
+        if self.fil_ppl['use']:
+            if self.filter_ops["FilterPassageByPPL"].filter_single_text(
+                text
+            ):
+                return True
+
         if self.fil_lang_score['use']:
             if self.filter_ops["FilterPassageByLangScore"].filter_single_text(
                 text, 

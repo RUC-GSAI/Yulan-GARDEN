@@ -16,6 +16,7 @@ class GPTEvaluator(EvaluatorBase):
             self.OpenAIs.append(OpenAI(api_key=api_key))
         self.cur_OpenAIs_ptr = 0
         self.MAX_RETRY_LIMITS_PER_QUERY = max(3, len(self.OpenAIs))
+        self.MAX_LENGTH_PROMPT = 24576
         self.input_path = ""
         self.output_path = ""
     
@@ -49,6 +50,10 @@ Please only answer "Text 1" or "Text 2" or "Tied" without offering any explanati
 [Text 2]
 {text2}
 """
+
+        if len(prompt) >= self.MAX_LENGTH_PROMPT:
+            return "TOO LONG TO EVALUATE"
+        
         retry_cnt = 0
         while True:
             try:
@@ -65,6 +70,9 @@ Please only answer "Text 1" or "Text 2" or "Tied" without offering any explanati
                 retry_cnt += 1
                 if retry_cnt >= self.MAX_RETRY_LIMITS_PER_QUERY:
                     raise Exception(f"Tried {retry_cnt} times exceed the limit {self.MAX_RETRY_LIMITS_PER_QUERY} in function GPTEvaluator().evaluate_single_pair()")
+            except openai.BadRequestError:
+                answer = "UNKNOWN ERROR"                
+                break
             else:
                 break
 

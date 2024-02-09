@@ -1,29 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+    <title>An Integrated Data Processing Framework for Pretraining Foundation Models</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 
 
 <body>
-    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+    <div class="container">
+        <div class="page-header">
+            <div class="row">
+                <div class="col-md-1">
+                    <a href="/retriever"><img src="{{ url_for('static', filename='imgs/rocket.png') }}" style="height: 60px; margin: 0px;"></a>
+                </div>
+                <div class="col-md-10">
+                    <h1>An Integrated Data Processing Framework for Pretraining Foundation Models</h1>
+                </div>
+            </div>
+        </div>
+        
+        <div class="wrapper">
+            <div class="sidebar">
+                <ul>
+                <li>Config type</li>
+                <li class="with-indent-active">Select a config</li>
+                <li class="with-indent">Customize a config</li>
+                <li>Analyzing results</li>
+                <li>Processing</li>
+                <li>Retriever</li>
+                <!-- <li class="with-indent">Retriever results</li> -->
+                </ul>
+            </div>
+            
+            <div class="container">
+                
+                <form method="POST" action="/show_config">
+                    <div class="row custom-row">
+                        <div class="col-md-6 text-center" style="margin-bottom: 10px;"> 
+                            <button type="submit" class="my-button">load the config</button>
+                        </div>
+                        <div class="col-md-6 text-center" style="margin-bottom: 10px;"> 
+                            <select name="select_config" class="form-control info-select center-input" required>
+                                <option value="">-- Please choose a config file --</option>
+                                {% for file in settings_files %}
+                                    <option value="{{ file }}">{{ file }}</option>
+                                {% endfor %}
+                            </select>   
+                        </div>
+                    </div>
+                </form>
 
+                <div class="row custom-row">
+                    <div class="col-md-6 text-center" style="margin-bottom: 10px;">
+                        <form method="POST" action="/">
+                            <button type="submit" class="my-button">return to the home page</button>
+                        </form>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
     <!-- page: select an existing config -->
 
-    <h3>select a config</h3>
-    <form method="POST" action="/show_config">
-        <select name="select_config">
-            <option value="">-- Please choose a config file --</option>
-            {% for file in settings_files %}
-                <option value="{{ file }}">{{ file }}</option>
-            {% endfor %}
-        </select>
-        <input type="submit" value="load the config">
-    </form><br>
-
-    <!-- return to index page -->
-    <form action="/" method="post">
-        <input type="submit" value="return to the home page">
-    </form>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>
 </html>

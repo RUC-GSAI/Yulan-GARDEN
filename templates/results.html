@@ -4,128 +4,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=0.3,  maximum-scale=2.0">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-    <style>
-        body {
-            height: 100%;
-            width: 100%;
-            min-width: 1000px;
-        }
-        .blank {
-            height: 20%;
-        }
-        .search {
-            /* background-color: lawngreen; */
-            color: red;
-        }
-        #search_box {
-            height: 48px;
-            border-radius: 10px 0px 0px 10px;
-            font-size: 20px;
-            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        }
-        #search_btn {
-            background-color: rgb(176, 6, 6);
-            height: 48px;
-            border-radius: 0px 10px 10px 0px;
-            font-size: 20px; 
-        }
-
-        .t-right-bar {
-            position: fixed;
-            right: 0;
-            bottom: 10%;
-            width: 48px;
-            height: 48px;
-            z-index: 1000;
-            cursor: pointer;
-        }
-
-        .t-right-bar > div {
-            float: left;
-            height: 45px;
-            line-height: 45px;
-            margin-bottom: 1px;
-            border-radius: 20px 0 0 20px;
-            color: #fff;
-            padding-left: 25%;
-            clear: both;
-            white-space: nowrap;
-            font-size: 13px;
-            font-style: normal;
-            background-color: #aaa;
-            background-repeat: no-repeat;
-            /* background-position: 12px center; */
-            transition: transform .2s cubic-bezier(.215, .61, .355, 1), padding .2s cubic-bezier(.215, .61, .355, 1), margin .2s cubic-bezier(.215, .61, .355, 1), background-color .2s cubic-bezier(.215, .61, .355, 1)
-        }
-
-        .t-right-bar > div.active, .t-right-bar > div:hover {
-            transform: translateX(-100%);
-            /* padding-left: 45px; */
-            padding-right: 10px;
-            margin-left: 48px;
-            background-color: #23a0e1;
-            text-decoration: none;
-            color: #fff
-        }
-
-        .t-right-bar img {
-            height: 36px;
-            width: 36px;
-            vertical-align: middle;
-        }
-
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <div class="container">
         <div class="page-header">
             <div class="row">
                 <div class="col-md-1">
-                    <a href="/search/"><img src="{{ url_for('static', filename='imgs/R.png') }}" style="height: 60px; margin: 0px;"></a>
+                    <a href="/retriever"><img src="{{ url_for('static', filename='imgs/rocket.png') }}" style="height: 60px; margin: 0px;"></a>
                 </div>
-                <div class="col-md-2">
-                    <h1 style="font-family: 'Courier New', Courier, monospace; font-weight: bold;">
-                        <a href="/search/" style="text-decoration:none">CorpusProber</a>
-                    </h1>
-                </div>
-                <div class="col-md-9">
-                    <div class="input-group col-md-12">
-                        <form id="searchform" action="#" method="post">
-                            <div class="row" style="margin-top:10px;">
-                                <div class="col-md-2" style="padding: 0px;"></div>
-                                <div class="col-md-8" style="padding-right: 0px;">
-                                    <span class="input-group-btn">
-                                         <input class="form-control" id="search_box" name="query" value="{{ query }}" required="required">
-                                         <!-- onKeyUp="value=value.replace(/[^\w+\s\-\_\:\'\,$]/g, '')" -->
-                                     </span>
-                                 </div>
-                                 <div class="col-md-2" style="padding-left: 0px;">
-                                    <button class="btn btn-info btn-search btn-block" id="search_btn" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
-                                 </div>
-                            </div>
-                        </form>
-                    </div>
+                <div class="col-md-10">
+                    <h1>An Integrated Data Processing Framework for Pretraining Foundation Models</h1>
                 </div>
             </div>
         </div>
 
-
-        
         <div class="row">
-            <div class="col-md-12" style="font-size: 10px; padding: 0px;">
+            <div class="container">
+                <form id="searchform" action="#" method="post">
+                    <div class="row" style="margin-top:10px;">
+                        <div class="col-md-1"></div>
+                        <div class="col-md-6" style="padding-right: 0px; min-width: 450px;">
+                            <span class="input-group-btn">
+                                <input class="form-control" id="search_box" name="query" value="{{ query }}" required="required">
+                            </span>
+                        </div>
+                        <div class="col-md-2" style="padding-left: 0px;">
+                        <button class="btn btn-info btn-search btn-block" id="search_btn" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+                        </div>
+                        <!-- <div class="col-md-3"></div> -->
+                </form>
+            </div>
+        </div>
+        <!-- <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-3" style="font-size: 15px; padding: 0px;">
                 {{ N }} Results &nbsp; Time cost: {{cost_time}}s 
             </div>
-        </div>
+        </div> -->
+        <br>
 
-        <!-- return to retriever page -->
-        <form action="/retriever" method="post">
-            <input type="submit" name="retrieve_task" value="return">
-        </form>
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-6" style="margin-bottom: 10px;">
+                <form method="POST" action="/retriever">
+                    <button type="submit" class="my-button" name="retrieve_task" id="retrieve_task" value="retrieve_task">return</button>
+                </form>
+            </div>
+        </div>
+        
+        
 
         <hr style="width: 100%; color: #0e0320;"/>
 
         {% for item in res %}
-        <div class="row">
+        <div class="row" style="margin-left: 100px;">
             <div>
                 <h3 class="info">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-fill" viewBox="0 0 16 16">
@@ -137,8 +70,8 @@
             </div>
             <div>
                 <br>
-                <span style="font-size: 15px; float: left;" id="{{loop.index}}_source">Source: {{ item['source'] }}</span>
-                <span style="font-size: 15px; float: right;"> scroe: {{ item['score'] }} </span>
+                <span style="font-size: 15px; float: left;" id="{{loop.index}}_source"></span>
+                <span style="font-size: 15px; float: right;"> score: {{ item['score'] }} </span>
             </div>
         </div>
         <hr style="width: 100%; color: #0e0320;"/>

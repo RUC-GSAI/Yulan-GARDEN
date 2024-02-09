@@ -1,136 +1,182 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
-    <style>
-        .image-container {
-            display: flex;
-        }
-      
-        .image-container img {
-            margin-right: 10px; /* 可选的图片间距，根据需要进行调整 */
-        }
-    </style>
-    
+    <title>An Integrated Data Processing Framework for Pretraining Foundation Models</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 
 
 <body>
-    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+    <div class="container">
+        <div class="page-header">
+            <div class="row">
+                <div class="col-md-1">
+                    <a href="/retriever"><img src="{{ url_for('static', filename='imgs/rocket.png') }}" style="height: 60px; margin: 0px;"></a>
+                </div>
+                <div class="col-md-10">
+                    <h1>An Integrated Data Processing Framework for Pretraining Foundation Models</h1>
+                </div>
+            </div>
+        </div>
+        
+        <div class="wrapper">
+            <div class="sidebar">
+                <ul>
+                <li>Config type</li>
+                <li class="with-indent">Select a config</li>
+                <li class="with-indent">Customize a config</li>
+                <li>Analyzing results</li>
+                <li class="active">Processing</li>
+                <li>Retriever</li>
+                <!-- <li class="with-indent">Retriever results</li> -->
+                </ul>
+            </div>
+            
+            <div class="container">
+                <!-- first time: no ret_args, display the button; 
+                    second time: process is finished, not display the button -->
+                <!-- <div class="col-md-6" style="text-align: left; padding-left: 90px; margin-bottom: 10px;"> -->
+                <form action="/processing" method="post">
+                    <div class="row custom-row">
+                        {% if not ret_args %}
+                            <div class="col-md-6" style="margin-bottom: 10px;">
+                                <button type="submit" class="my-button" id="confirm" style="display: inline-block;" name="confirm" value="confirm" required>confirm</button>
+                            </div>
+                            <!-- <button type="submit" class="btn btn-primary" id="confirm" style="display: inline;"  name="confirm" value="confirm" required>confirm</button> -->
+                        {% endif %}
+                    </div>
+                    <br>
+                    <div class="row custom-row">
+                        <span id="waiting" style="display: none;">
+                            <h2 style="text-align: left; padding-left: 0px; margin-bottom: 40px;">&nbsp; Processing... Please wait patiently.</h2>
+                            <!-- <div id="log-content" style="text-align: left; padding-left: 40px; margin-bottom: 10px;"></div> -->
+                        </span>
+                    </div>
+                </form>
+                <!-- </div> -->
+            
+                
+                <script>
+                    document.getElementById("confirm").addEventListener("click", function() {
+                        document.getElementById("confirm").style.display = "none";
+                        document.getElementById("waiting").style.display = "inline";
+
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("POST", "/read_log", true);
+                        xhr.onreadystatechange = function() {
+                            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                                document.getElementById("log-content").innerText = xhr.responseText;
+                                document.getElementById("confirm").disabled = false; // start
+                            }
+                        };
+                        xhr.send();
+
+                        setInterval(function() {
+                            var xhr = new XMLHttpRequest();
+                            xhr.open("POST", "/read_log", true);
+                            xhr.onreadystatechange = function() {
+                                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                                    document.getElementById("log-content").innerText = xhr.responseText;
+                                }
+                            };
+                            xhr.send();
+                        }, 5000);
+                    });
+                </script>
 
 
-    <form method="POST" action="/processing">
-        <!-- first time: no ret_args, display the button; 
-            second time: process is finished, not display the button -->
-        {% if not ret_args %}
-            <input type="submit" id="confirm" style="display: inline;" name="confirm" value="confirm" required>
-        {% endif %}
-        <span id="waiting" style="display: none;">
-            <h2>Processing... Please wait patiently.</h2>
-            <div id="log-content"></div>
-        </span>
-    </form>
-  
-    
-    <script>
-        document.getElementById("confirm").addEventListener("click", function() {
-            document.getElementById("confirm").style.display = "none";
-            document.getElementById("waiting").style.display = "inline";
-
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/read_log", true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    document.getElementById("log-content").innerText = xhr.responseText;
-                    document.getElementById("confirm").disabled = false; // 启用按钮
-                }
-            };
-            xhr.send();
-
-            setInterval(function() {
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/read_log", true);
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                        document.getElementById("log-content").innerText = xhr.responseText;
-                    }
-                };
-                xhr.send();
-            }, 5000);
-        });
-    </script>
-
-
-    {% if ret_args %}
-        <h2>Successful!</h2>
-        {% if ret_args['if_debug'] %}
-            <h3>debug file path: {{ret_args['debug_path']}}</h3>
-            <details>
-                <summary>details of debug file</summary>
-                    <pre>{{ret_args['debug_file']}}</pre>
-            </details>
-            <details>
-                <summary>dirstribution of refined data</summary>
-                    {% if ret_args['figs_list']|length > 0 %}
-                        <div class="image-container">
-                                {% for fig_path in ret_args['figs_list'] %}
-                                    <div class="col-md-2">
-                                        <img src="{{ fig_path }}" width="305" height="290">
-                                    </div>
-                                {% endfor %}
+                {% if ret_args %}
+                    <div class="row custom-row">
+                        <div class="col-md-12">
+                            <h2 id="waiting" style="text-align: left; padding-left: 0px; margin-bottom: 40px;">&nbsp; Successful!</h2>
                         </div>
-                    {% endif %}
-            </details>
-            <details>
-                <summary>dirstribution of raw data</summary>
-                    {% if ret_args['raw_figs_list']|length > 0 %}
-                        <div class="image-container">
-                                {% for fig_path in ret_args['raw_figs_list'] %}
-                                    <div class="col-md-2">
-                                        <img src="{{ fig_path }}" width="305" height="305">
-                                    </div>
-                                {% endfor %}
+                    </div>
+                    <div class="row custom-row">
+                        <!-- retriever task -->
+                        <div class="col-md-6" style="margin-bottom: 10px;">
+                            <form method="POST" action="/retriever">
+                                <button type="submit" class="my-button" id="retrieve_task" name="retrieve_task" value="retrieve_task">retrieve</button>
+                            </form>
                         </div>
+                    </div>
+                    <br>
+                    {% if ret_args['if_debug'] %}
+                        <details>
+                            <summary class="details-summary">details of debug file</summary>
+                            <div class="content">
+                                <pre>{{ret_args['debug_file']}}</pre>
+                            </div>
+                        </details>
+                        <br>
+                        <br>
+                        <details>
+                            <summary class="details-summary">dirstribution of refined data</summary>
+                                {% if ret_args['figs_list']|length > 0 %}
+                                    <div class="image-container">
+                                        {% for fig_path in ret_args['figs_list'] %}
+                                            <div class="image-item">
+                                                <img src="{{ fig_path }}">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                        </details>
+                        <br>
+                        <br>
+                        <details>
+                            <summary class="details-summary">dirstribution of raw data</summary>
+                                {% if ret_args['raw_figs_list']|length > 0 %}
+                                    <div class="image-container">
+                                            {% for fig_path in ret_args['raw_figs_list'] %}
+                                                <div class="image-item">
+                                                    <img src="{{ fig_path }}">
+                                                </div>
+                                            {% endfor %}
+                                    </div>
+                                {% endif %}
+                        </details>
+                        <br>
+                        <br>
                     {% endif %}
-            </details>
-        {% endif %}
-        {% if ret_args['sample_results'] %}
-            <details>
-                <summary><h2>Examples</h2></summary>                    
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>origin texts</th>
-                                <th>refined texts</th>
-                                <!-- <th>differences</th> -->
-                            </tr>
-                        </thead>
-                    
-                        {% for row in ret_args['sample_results'] %}
-                            <tr>
-                                <td>{{ row[0] }}</td>
-                                <td>{{ row[1] }}</td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-            </details>
-            <br>
-            <!-- retriever task -->
-            <form action="/retriever" method="post">
-                <!-- <input type="submit" value="提交任务"> -->
-                <!-- <label for="custom_config_file">配置文件名：</label> -->
-                <input type="submit" id="retrieve_task" name="retrieve_task" value="retreve" >
-                <!-- <button id="runButton">提交任务</button> -->
-            </form>
-        {% endif %}
-    {% endif %}
+                    {% if ret_args['sample_results'] %}
+                        <details>
+                            <summary class="details-summary">Examples</summary>               
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>origin texts</th>
+                                            <th>refined texts</th>
+                                            <!-- <th>differences</th> -->
+                                        </tr>
+                                    </thead>
+                                
+                                    {% for row in ret_args['sample_results'] %}
+                                        <tr>
+                                            <td><p>{{ row[0] }}</p></td>
+                                            <td><p>{{ row[1] }}</p></td>
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                        </details>
 
-    
-    <br>
-    <!-- return to index page -->
-    <form action="/" method="post">
-        <input type="submit" value="return to the home page">
-    </form>
+                        
+                    {% endif %}
+                {% endif %}
 
+                <div class="row custom-row">
+                    <!-- return to index page -->
+                    <div class="col-md-6" style="margin-bottom: 10px; margin-top: 10px;">
+                        <form method="POST" action="/">
+                            <button type="submit" class="my-button">return to the home page</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>
 </html>

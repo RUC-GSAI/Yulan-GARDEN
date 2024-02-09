@@ -1,117 +1,147 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+    <title>An Integrated Data Processing Framework for Pretraining Foundation Models</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/indent.css') }}">
 </head>
 
-<style>
-    .indent2 {
-        padding-left: 2ch;
-    }
-    .indent4 {
-        padding-left: 4ch;
-    }
-    .indent6 {
-        padding-left: 6ch;
-    }
-    .inline-title {
-        display: inline-block;
-    }
-</style>
 
 <body>
-    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+    <div class="container">
+        <div class="page-header">
+            <div class="row">
+                <div class="col-md-1">
+                    <a href="/retriever"><img src="{{ url_for('static', filename='imgs/rocket.png') }}" style="height: 60px; margin: 0px;"></a>
+                </div>
+                <div class="col-md-10">
+                    <h1>An Integrated Data Processing Framework for Pretraining Foundation Models</h1>
+                </div>
+            </div>
+        </div>
 
-    <!-- page: select an existing config -->
-
-    <details>
-        <summary><span class="inline-title"><h3>customize a config</h3></span></summary>
-        <!-- <summary><h3>customize a config</h3></summary> -->
-        <form method="POST" action="/show_config">
-            <!-- 在这里添加各个参数的输入框 -->
-            <label for="custom_config">config name</label>
-            <input type="text" id="custom_config" name="custom_config" required><br><br>
+        <!-- page: select an existing config -->
+        <div class="container">
+            <div class="sidebar">
+                <ul>
+                <li>Config type</li>
+                <li class="with-indent">Select a config</li>
+                <li class="with-indent-active">Customize a config</li>
+                <li>Analyzing results</li>
+                <li>Processing</li>
+                <li>Retriever</li>
+                <!-- <li class="with-indent">Retriever results</li> -->
+                </ul>
+            </div>
             
-            <!-- 嵌套定义的字典 第一层-->
-            {% for parameter1, definition1 in parameter_definitions.items() %}
-                <label for="{{ parameter1 }}">{{ parameter1 }}:</label>
-                {% if parameter1.startswith('if') or parameter3 == 'use' %}
-                    <select id="{{ parameter1 }}" name="{{ parameter1 }}">
-                        <option value="">-- true/false --</option>
-                        <option value=true>true</option>
-                        <option value="">false</option>
-                    </select><br><br>
-                {% elif definition1 is string %}
-                    <input type="text" id="{{ parameter1 }}" name="{{ parameter1 }}" placeholder="{{ definition1 }}"><br><br>            
-                <!-- 嵌套定义的字典 第二层-->
-                {% elif definition1|is_dict %}
-                    <br><br>
-                    <div class="indent2">
-                        {% for parameter2, definition2 in definition1.items() %}
-                            <label for="{{ parameter2 }}">{{ parameter2 }}:</label>
-                            {% if parameter2 == 'comments' %}
-                                {{ definition2 }}<br><br>
-                            {% elif parameter2.startswith('if') or parameter3 == 'use' %}
-                                <select id="{{ parameter2 }}" name="{{ parameter1 }}.{{ parameter2 }}">
-                                    <option value="">-- true/false --</option>
-                                    <option value=true>true</option>
-                                    <option value="">false</option>
-                                </select><br><br>
-                            {% elif definition2 is string or definition2 is number %}
-                                <input type="text" id="{{ parameter2 }}" name="{{ parameter1 }}.{{ parameter2 }}" placeholder="{{ definition2 }}"><br><br>                        
-                            <!-- 嵌套定义的字典 第三层-->
-                            {% elif definition2|is_dict %}
-                                <br><br>
-                                <div class="indent4">
-                                    {% for parameter3, definition3 in definition2.items() %}
-                                        <label for="{{ parameter3 }}">{{ parameter3 }}:</label>
-                                        {% if parameter3 == 'comments' %}
-                                            {{ definition3 }}<br><br>
-                                        {% elif parameter3.startswith('if') or parameter3 == 'use' %}
-                                            <select id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}">
-                                                <option value="">-- true/false --</option>
-                                                <option value=true>true</option>
-                                                <option value="">false</option>
-                                            </select><br><br>
-                                        {% elif definition3 is string or definition3 is number %}
-                                            <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="string{{ definition3 }}"><br><br>
-                                        {% elif definition3|is_dict %}
-                                            <!-- 特殊处理extractor.mode -->
-                                            {% if parameter3 == 'mode' %}                                        
-                                            <br><br>
-                                            <div class="indent6">
-                                                {% for parameter4, definition4 in definition3.items() %}
-                                                    <label for="{{ parameter4 }}">{{ parameter4 }}:</label>                                                
-                                                    {% if definition4 is boolean %}
-                                                        <select id="{{ parameter4 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}.{{parameter4}}">
-                                                            <option value="">-- true/false --</option>
-                                                            <option value=true>true</option>
-                                                            <option value="">false</option>
-                                                        </select><br><br>                                                
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </div>
+            <div class="content">
+
+                <details>
+                    <summary><span class="inline-title"><h3>customize a config</h3></span></summary>
+                    <!-- <summary><h3>customize a config</h3></summary> -->
+                    <form method="POST" action="/show_config">
+                        <!-- Add input boxes for each parameter here -->
+                        <div class="indent0">
+                            <label for="custom_config">config name</label>
+                            <input type="text" id="custom_config" name="custom_config" required><br><br>
+                            
+                            <!-- first layer of nested definition dictionary -->
+                            {% for parameter1, definition1 in parameter_definitions.items() %}
+                                <label for="{{ parameter1 }}">{{ parameter1 }}:</label>
+                                {% if parameter1.startswith('if') or parameter3 == 'use' %}
+                                    <select id="{{ parameter1 }}" name="{{ parameter1 }}">
+                                        <option value="">-- true/false --</option>
+                                        <option value=true>true</option>
+                                        <option value="">false</option>
+                                    </select><br><br>
+                                {% elif definition1 is string %}
+                                    <input type="text" id="{{ parameter1 }}" name="{{ parameter1 }}" placeholder="{{ definition1 }}" style="width: 40%;"><br><br>            
+                                <!-- second layer of nested definition dictionary -->
+                                {% elif definition1|is_dict %}
+                                    <br><br>
+                                    <div class="indent2">
+                                        {% for parameter2, definition2 in definition1.items() %}
+                                            <label for="{{ parameter2 }}">{{ parameter2 }}:</label>
+                                            {% if parameter2 == 'comments' %}
+                                                {{ definition2 }}<br><br>
+                                            {% elif parameter2.startswith('if') or parameter3 == 'use' %}
+                                                <select id="{{ parameter2 }}" name="{{ parameter1 }}.{{ parameter2 }}">
+                                                    <option value="">-- true/false --</option>
+                                                    <option value=true>true</option>
+                                                    <option value="">false</option>
+                                                </select><br><br>
+                                            {% elif definition2 is string or definition2 is number %}
+                                                <input type="text" id="{{ parameter2 }}" name="{{ parameter1 }}.{{ parameter2 }}" placeholder="{{ definition2 }}" style="width: 40%;"><br><br>                        
+                                            <!-- third layer of nested definition dictionary -->
+                                            {% elif definition2|is_dict %}
+                                                <br><br>
+                                                <div class="indent4">
+                                                    {% for parameter3, definition3 in definition2.items() %}
+                                                        <label for="{{ parameter3 }}">{{ parameter3 }}:</label>
+                                                        {% if parameter3 == 'comments' %}
+                                                            {{ definition3 }}<br><br>
+                                                        {% elif parameter3.startswith('if') or parameter3 == 'use' %}
+                                                            <select id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}">
+                                                                <option value="">-- true/false --</option>
+                                                                <option value=true>true</option>
+                                                                <option value="">false</option>
+                                                            </select><br><br>
+                                                        {% elif definition3 is string or definition3 is number %}
+                                                            <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="string{{ definition3 }}" style="width: 40%;"><br><br>
+                                                        {% elif definition3|is_dict %}
+                                                            <!-- sepcial process for extractor.mode -->
+                                                            {% if parameter3 == 'mode' %}                                        
+                                                            <br><br>
+                                                            <div class="indent6">
+                                                                {% for parameter4, definition4 in definition3.items() %}
+                                                                    <label for="{{ parameter4 }}">{{ parameter4 }}:</label>                                                
+                                                                    {% if definition4 is boolean %}
+                                                                        <select id="{{ parameter4 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}.{{parameter4}}">
+                                                                            <option value="">-- true/false --</option>
+                                                                            <option value=true>true</option>
+                                                                            <option value="">false</option>
+                                                                        </select><br><br>                                                
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </div>
+                                                            {% else %}
+                                                                <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="key-value pairs, example: key1:value1;key2:value2" style="width: 40%;"><br><br>
+                                                            {% endif %}
+                                                        {% elif definition3|is_list %}                                        
+                                                            <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="list of values, example: value1, value2, value3" style="width: 40%;"><br><br>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
                                             {% endif %}
-                                            <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="key-value pairs, example: key1:value1;key2:value2"><br><br>
-                                        {% elif definition3|is_list %}                                        
-                                            <input type="text" id="{{ parameter3 }}" name="{{ parameter1 }}.{{ parameter2 }}.{{ parameter3 }}" placeholder="list of values, example: value1, value2, value3"><br><br>
-                                        {% endif %}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        {% endfor %}
+                                        {% endfor %}
+                                    </div>
+
+                                {% endif %}
+                            {% endfor %}
+                        </div>    
+                        <div class="row">
+                            <div class="col-md-6" style="text-align: left; padding-left: 110px; margin-bottom: 10px;">
+                                <button type="submit" class="my-button">save the config</button>
+                            </div>
+                        </div>
+                    </form>
+                </details>
+
+                <!-- return to index page -->
+                <div class="row">
+                    <div class="col-md-6" style="text-align: left; padding-left: 110px; margin-bottom: 10px;">
+                        <form action="/" method="post">
+                            <button type="submit" class="my-button">return to the home page</button>
+                        </form>
                     </div>
+                </div>
+            </div>
+        </div>  
+    </div>
 
-                {% endif %}
-            {% endfor %}
-            
-            <input type="submit" value="保存配置文件">
-        </form>
-    </details>
-
-    <!-- return to index page -->
-    <form action="/" method="post">
-        <input type="submit" value="return to the home page">
-    </form>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -1,26 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</title>
+    <title>An Integrated Data Processing Framework for Pretraining Foundation Models</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <style>
-        body {
-            padding-top: 20px;
-        }
-        .page-header {
-            margin-bottom: 40px;
-        }
-        h1 {
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            font-size: 32px;
-        }
-        .btn {
-            margin-right: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <div class="container">
@@ -30,26 +15,37 @@
                     <a href="/retriever"><img src="{{ url_for('static', filename='imgs/rocket.png') }}" style="height: 60px; margin: 0px;"></a>
                 </div>
                 <div class="col-md-10">
-                    <h1>ZHEM: A Synthetic Data Processing Pipeline for Large Language Models</h1>
+                    <h1>An Integrated Data Processing Framework for Pretraining Foundation Models</h1>
                 </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-md-12">
-                <h2 style="text-align: left; padding-left: 80px; margin-bottom: 40px;">&nbsp; Please select your config type:</h2>
+        
+        <div class="wrapper">
+            <div class="sidebar">
+                <ul>
+                <li class="active">Config type</li>
+                <li class="with-indent">Select a config</li>
+                <li class="with-indent">Customize a config</li>
+                <li>Analyzing results</li>
+                <li>Processing</li>
+                <li>Retriever</li>
+                <!-- <li class="with-indent">Retriever results</li> -->
+                </ul>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6 text-center" style="margin-bottom: 10px;">
-                <form method="POST" action="/select_config">
-                    <button type="submit" class="btn btn-primary">Select an existing config</button>
-                </form>
-            </div>
-            <div class="col-md-6 text-center" style="margin-bottom: 10px;">
-                <form method="POST" action="/customize_config">
-                    <button type="submit" class="btn btn-primary">Customize a config</button>
-                </form>
+            
+            <div class="container">
+                <div class="row custom-row">
+                    <div class="col-md-6 text-center" style="margin-bottom: 10px;">
+                        <form method="POST" action="/select_config">
+                            <button type="submit" class="my-button">Select an existing config</button>
+                        </form>
+                    </div>
+                    <div class="col-md-6 text-center" style="margin-bottom: 10px;">
+                        <form method="POST" action="/customize_config">
+                            <button type="submit" class="my-button">Customize a config</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

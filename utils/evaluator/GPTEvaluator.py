@@ -9,7 +9,7 @@ from tqdm import tqdm
 from collections import defaultdict
 
 class GPTEvaluator(EvaluatorBase):
-    def __init__(self, api_keys: list = ["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"]):
+    def __init__(self, api_keys: list = ["/your/openAI/API/key"]):
         self.api_keys = api_keys
         self.OpenAIs = []
         for api_key in self.api_keys:
@@ -111,12 +111,8 @@ Please only answer "Text 1" or "Text 2" or "Tied" without offering any explanati
 if __name__ == '__main__':
     gptevaluator = GPTEvaluator(
         api_keys=[
-            "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",
-            "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",
-            "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",
-            "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",
-            "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",
-            "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"
+            "/your/openAI/API/key1",
+            "/your/openAI/API/key2"
         ]
     )
     gptevaluator.evaluate_pairwise_pairs(

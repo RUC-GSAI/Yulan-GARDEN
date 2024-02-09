@@ -60,7 +60,7 @@ class Deduplicator:
         # print("=====> Dedupicate data " + self.tmp_dir)
         if not os.path.exists(self.tmp_dir):
             os.makedirs(self.tmp_dir)        
-        dedup_command_line = "cd /home/u2022101014/text-dedup; python3 -m text_dedup.minhash --data_files {0} --split train --path json --cache_dir ~/.cache/ --output {1} --column {2} --batch_size 50000 --num_perm {3} --ngram {4} --min_length {5} --threshold {6}".format(self.tmp_file, self.tmp_dir, self.column, self.num_perm, self.ngram, self.min_length, self.threshold)
+        dedup_command_line = "cd utils/text-dedup; python3 -m text_dedup.minhash --data_files {0} --split train --path json --cache_dir ~/.cache/ --output {1} --column {2} --batch_size 50000 --num_perm {3} --ngram {4} --min_length {5} --threshold {6}".format(self.tmp_file, self.tmp_dir, self.column, self.num_perm, self.ngram, self.min_length, self.threshold)
         os.system(dedup_command_line)
         # print("=====> Convert to jsonl file " + self.output_file)
         self.transformer_dedup_data_into_jsonl()

@@ -234,10 +234,11 @@ class Debugger():
         '''
         with open(self.debug_report_path, 'w', encoding='utf-8') as fw:
             json.dump(report, fw, indent=4, ensure_ascii=False)
-        
-        if self.ppl:
+
+        try: 
             return self.ppl
-        return None
+        except AttributeError:
+            return None        
     
     def debug_single_text(self, text: str) -> None:
         '''
@@ -580,10 +581,10 @@ class Debugger():
         plt.clf()
         plt.cla()
         plt.figure(figsize=(6, 6)) 
-        plt.pie(sizes, labels=labels, colors=colors, autopct='%.2f%%') 
+        plt.pie(sizes, labels=labels, colors=colors, autopct='%.2f%%', startangle=90) 
         plt.legend()
         plt.axis('equal')
-        plt.title(title, y=0.95)
+        plt.title(title, y=0.95, fontsize=16)
         plt.savefig(fig_path, transparent=True)
 
     def _histogram(self, data: list, fig_path: str, title: str) -> None:
@@ -593,7 +594,7 @@ class Debugger():
         bin_width = (max(data) - min(data)) / np.sqrt(len(data))
         num_bins = int(np.ceil((max(data) - min(data)) / bin_width))
         sns.displot(data, bins=num_bins)        
-        plt.title(title, y=0.95)
+        plt.title(title, y=0.95, fontsize=16)
         # plt.xlabel('Value')
         # plt.ylabel('Frequency')
         plt.savefig(fig_path, transparent=True)

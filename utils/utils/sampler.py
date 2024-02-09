@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from utils.utils.logger import global_logger
 
-textkey = 'Content'
+textkey = 'text'
 
 class SampleConfig(TypedDict):
     input_path: str = ""
@@ -23,19 +23,21 @@ class SampleConfig(TypedDict):
 
 class Sampler():
     def __init__(self, sample_config: SampleConfig=None):
+        self.if_sample = True
         self.input_path = ""
         self.output_path = ""
         self.output_to_file = True
         self.if_sample_randomly = True
         self.SAMPLE_RANDOMLY_NUM = 100
         self.SAMPLE_RANDOMLY_PROPORTION = 1.2
-        self.if_sample_by_length = False
+        self.if_sample_by_length = True
         self.SAMPLE_BY_LENGTH_NUM = 50
         self.SAMPLE_BY_LENGTH_PROPORTION = 10
 
         if sample_config is not None:
+            self.if_sample = sample_config.get("if_sample", True)
             self.input_path = sample_config.get("input_path", "")
-            self.output_path = sample_config.get("output_path", "")
+            self.output_path = sample_config.get("output_path", "")            
             self.output_to_file = sample_config.get("output_to_file", True)
             self.if_sample_randomly = sample_config.get("if_sample_randomly", True)
             self.SAMPLE_RANDOMLY_NUM = sample_config.get("SAMPLE_RANDOMLY_NUM", 100)
@@ -62,7 +64,7 @@ class Sampler():
                     if self.output_to_file:
                         fw.write(line)
                     else:
-                        ret.append(line)
+                        ret.append(json.loads(line))
                     cnt += 1
                 if cnt >= self.SAMPLE_RANDOMLY_NUM:
                     break
@@ -72,19 +74,39 @@ class Sampler():
         else:
             global_logger.log_text(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines..")
             return ret
-
+        
+    def _no_sample(self, input_path) -> None:
+        global_logger.log_text(f"begin to dump all lines from {input_path}..")
+        
+        # mode: append (if self.input_path is a list, there may be many writings)
+        with open(input_path, mode='r', encoding="utf-8") as fr, open(self.output_path, mode='a') as fw:
+            cnt = 0
+            for line in fr:
+                fw.write(line)
+                cnt += 1
+                
+        global_logger.log_text(f"finish dump all lines into {self.output_path}..")
+        
     def sample_randomly_works(self) -> None:
         '''
         self.input_path can be a work list (from prepare_works) or a file
         '''
         # to clear the file: self.output_path
         with open(self.output_path, mode='w') as fw:
-            pass    
-        if isinstance(self.input_path, list):
-            for input_path in self.input_path:
-                self._sample_randomly(input_path)
+            pass   
+        if self.if_sample:             
+            if isinstance(self.input_path, list):
+                for input_path in self.input_path:
+                    self._sample_randomly(input_path)
+            else:
+                self._sample_randomly(self.input_path)
         else:
-            self._sample_randomly(self.input_path)
+            if isinstance(self.input_path, list):
+                for input_path in self.input_path:
+                    print(input_path)
+                    self._no_sample(input_path)
+            else:
+                self._no_sample(self.input_path)
 
     def gen_length_statistic(self, len_list: list):
         mean = np.mean(len_list)
@@ -178,37 +200,50 @@ if __name__ == '__main__':
     # import matplotlib.pyplot as plt
     # from matplotlib import cm
 
-    import os
+    # import os
 
-    file_path = "/fs/archive/share/u2022101014/data/openwebtext2/sample/raw.jsonl"
-    output_path = "/fs/archive/share/u2022101014/data/openwebtext2/sample/raw_new.jsonl"
-    target_size = 1024 * 1024 * 1024  # 1GB
-    # target_size = 1024 * 1024
+    # file_path = "/fs/archive/share/u2022101014/data/openwebtext2/sample/raw.jsonl"
+    # output_path = "/fs/archive/share/u2022101014/data/openwebtext2/sample/raw_new.jsonl"
+    # # file_path = "/fs/archive/share/u2022101014/data/openwebtext2/clean_v2/raw.jsonl"
+    # # output_path = "/home/u2022101014/ZHEM/bash/owt_1w.jsonl"
+    # target_size = 1024 * 1024 * 1024  # 1GB
+    # # target_size = 1024 * 1024
 
-    total_size = 0
-    num_lines = 0
-    lines = []
+    # total_size = 0
+    # num_lines = 0
+    # lines = []
 
-    with open(file_path, "r") as file, open(output_path, "w") as fw:
-        while total_size <= target_size:
-            line = file.readline()
-            if not line:
-                break
+    # with open(file_path, "r") as file, open(output_path, "w") as fw:
+    #     while total_size <= target_size:
+    #         line = file.readline()
+    #         if not line:
+    #             break
 
-            # lines.append(line)
+    #         # lines.append(line)
             
-            total_size += len(line.encode())
+    #         total_size += len(line.encode())
 
-            if total_size > target_size:
-                break
+    #         if total_size > target_size:
+    #             break
 
-            fw.write(line)
-            num_lines += 1
+    #         fw.write(line)
+    #         num_lines += 1
 
-    # 打印读取的行数和累计数据大小
-    # print("读取的行数:", len(lines))
-    print("累计数据大小:", total_size)
-    print(num_lines)
+    # # 打印读取的行数和累计数据大小
+    # # print("读取的行数:", len(lines))
+    # print("累计数据大小:", total_size)
+    # print(num_lines)
 
-    # 处理读取到的行数据
-    # ...
+    # # 处理读取到的行数据
+    # # ...
+    import re
+    dic = {"text": "Libya ( ; , ), officially the State of Libya , is a country in the Maghreb region of North Africa. It is bordered by the Mediterranean Sea to the north, Egypt to the east, Sudan to the southeast, Chad to the south, Niger to the southwest, Algeria to the west, and Tunisia to the northwest. Libya comprises three historical regions: Tripolitania,"}
+    text = dic['text']
+    # pattern = r
+    # "## See also\n"
+    # pattern = "#* See also\n"
+    
+    with open('/home/u2022101014/ZHEM/utils/utils/input_path.json', 'r') as fr:
+        input_path = json.load(fr)
+    for a in input_path:
+        print(a.split('/')[-1])

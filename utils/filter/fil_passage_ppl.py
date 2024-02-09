@@ -15,7 +15,7 @@ class FilterPassageByPPL(FilterBase):
     '''
     def __init__(self, input_path: str = "", output_path: str = "", bound_path: str = "") -> None:
         self.perplexity_evaluator = PerplexityEvaluator(
-            model_path="/fs/archive/share/u2022101014/models/kenlm/"
+            model_path="utils/models/kenlm/"
         )
         self.sample_cnt = 0
 
@@ -32,7 +32,7 @@ class FilterPassageByPPL(FilterBase):
         self.text_field = "text"
         self.lang_field = "language"
         self.langidentifier = LangIdentifier(
-            model_path="/fs/archive/share/u2022101014/models/fasttext/lid.176.bin"
+            model_path="utils/models/fasttext/lid.176.bin"
         )
 
         self.ppl_distributed = defaultdict(list)
@@ -60,60 +60,25 @@ class FilterPassageByPPL(FilterBase):
         self.reject_cnt = 0
         self.accept_cnt = 0
 
-    def calc_filter_threshold(self, ppls: dict) -> None:
+    def calc_filter_threshold(self, ppls: dict, param: float) -> None:
+        assert param > 0
         global_logger.log_text("Begin to Calculate the upper and lower bounds of the ppl filtering threshold..")
         self.ppl_distributed = ppls
         # determine the lower_bound and upper_bound according to the sampled items
         for lang in self.ppl_distributed:
             ndt = self.ppl_distributed[lang]
             mean, std_dev = np.mean(ndt), np.std(ndt)
-            range_3sigma = [mean - (3 * std_dev), mean + (3 * std_dev)]
-            self.ppl_filter_thresholds[lang]["lower_bound"] = range_3sigma[0]
-            self.ppl_filter_thresholds[lang]["upper_bound"] = range_3sigma[1]
-            global_logger.log_text(f"Calculating the upper({self.ppl_filter_thresholds[lang]['upper_bound']}) and lower({self.ppl_filter_thresholds[lang]['lower_bound']}) bounds of the ppl filtering threshold completed!!")
+            range_sigma = [mean - (param * std_dev), mean + (param * std_dev)]
+            # range_3sigma = [mean - (2 * std_dev), mean + (2 * std_dev)]
+            # range_3sigma = [mean - (std_dev), mean + (std_dev)]
+            self.ppl_filter_thresholds[lang]["lower_bound"] = range_sigma[0]
+            self.ppl_filter_thresholds[lang]["upper_bound"] = range_sigma[1]
+            global_logger.log_text(f"For {lang}, calculating the upper bound({self.ppl_filter_thresholds[lang]['upper_bound']}) ({param} * sigma) of the ppl filtering threshold completed!!")
 
-
-        # # sampled items
-        # sampled_dt = self.sampler.sample_randomly_works()
-
-        # global_logger.log_text('\n\nsample complete!\n\n\n\n')
-
-        # # label language of each item
-        # if self.lang_field in sampled_dt[0].keys():
-        #     for dt in sampled_dt:
-        #         dt["meta"][self.lang_field] = dt[self.lang_field]
-        # elif "meta" in sampled_dt[0].keys() and self.lang_field in sampled_dt[0]["meta"].keys():
-        #     pass
-        # else:
-        #     for dt in sampled_dt:
-        #         if "meta" not in dt.keys():
-        #             dt["meta"] = {}
-        #         dt["meta"][self.lang_field] = self.langidentifier.evaluate_single_text(dt[self.text_field])[0][0]
-        
-        # # calculate ppl of each sampled item
-        # for dt in sampled_dt:
-        #     lang = dt["meta"][self.lang_field]
-        #     ppl = self.perplexity_evaluator.evaluate_single_text(
-        #         text = dt[self.text_field],
-        #         lang = lang
-        #     )
-        #     # if we don't have language ppl model, ppl is None
-        #     if ppl:
-        #         self.ppl_distributed[lang].append(ppl)
-        
-        # # determine the lower_bound and upper_bound according to the sampled items
-        # for lang in self.ppl_distributed:
-        #     ndt = self.ppl_distributed[lang]
-        #     mean, std_dev = np.mean(ndt), np.std(ndt)
-        #     range_3sigma = [mean - (3 * std_dev), mean + (3 * std_dev)]
-        #     self.ppl_filter_thresholds[lang]["lower_bound"] = range_3sigma[0]
-        #     self.ppl_filter_thresholds[lang]["upper_bound"] = range_3sigma[1]
-        #     global_logger.log_text(f"Calculating the upper({self.ppl_filter_thresholds[lang]['upper_bound']}) and lower({self.ppl_filter_thresholds[lang]['lower_bound']}) bounds of the ppl filtering threshold completed!!")
-
-    def filter_single_text(self, text: str, lang: str = "") -> bool:      
+    def filter_single_text(self, text: str, lang: str="") -> bool:      
         # label the language of current text
-        if not lang:
-            lang, score = self.langidentifier.evaluate_single_text(text)
+        if len(lang) == 0:
+            lang, scores = self.langidentifier.evaluate_single_text(text)
         lang = lang[0]
         ppl = self.perplexity_evaluator.evaluate_single_text(
             text = text, 

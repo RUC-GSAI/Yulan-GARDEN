@@ -1,8 +1,8 @@
 {
-    "input_path": "/fs/archive/share/u2022101014/ZHEM_test/input_data/",
+    "input_path": "your_input_data_path",
     "input_ext": "jsonl",
     "input_text_key": "text",
-    "output_path": "/fs/archive/share/u2022101014/ZHEM_test/output_data/",
+    "output_path": "your_output_data_path",
     "output_source_value": "the-dataset-name",
     "if_filter": false,
     "filter_paras": {
@@ -25,7 +25,8 @@
             "accept_lang_list": ["en", "zh"]
         },
         "fil_ppl": {
-            "use": false
+            "use": false,
+            "param": 3
         },
         "fil_lang_score": {
             "use": false,
@@ -55,18 +56,6 @@
             "use": false,
             "param": 0.25,
             "lower_bound": 3
-        },
-        "fil_meta": {
-            "comments": "remove **a text** if an item consists new keys in 'meta'",
-            "use": false,
-            "keys_list": {
-                "name_key1": [
-
-                ],
-                "name_key2": [
-
-                ]
-            }
         }
     },
     "if_clean": false,
@@ -161,6 +150,7 @@
     "debug_paras": {
         "debug_report_path": "debug_report/debug_report.json",
         "debug_cases_num": 5,
+        "if_sample": true,
         "debug_sample_num_per_file": 100,  
         "debug_find_cases": {
             "use" : false,

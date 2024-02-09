@@ -8,7 +8,7 @@ class FilterPassageByLangScore(FilterBase):
     '''
     def __init__(self) -> None:
         self.language_identifier = LangIdentifier(
-            model_path="/fs/archive/share/u2022101014/models/fasttext/lid.176.bin"
+            model_path="utils/models/fasttext/lid.176.bin"
         )
         self.reject_cnt = 0
         self.accept_cnt = 0

@@ -23,7 +23,7 @@ class PerplexityEvaluator(EvaluatorBase):
             ** Return Values
             @{{Quality Score}}: the score given by each subclass according to given text;
     '''
-    def __init__(self, model_path: str = "/fs/archive/share/u2022101014/models/kenlm/", lang: str="en") -> None:
+    def __init__(self, model_path: str = "utils/models/kenlm/", lang: str="en") -> None:
         self.input_path = ""
         self.output_path = ""
         self.langs = ["en", "zh"]

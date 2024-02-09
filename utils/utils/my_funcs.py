@@ -22,3 +22,12 @@ def for_bdbk(text: str) -> str:
     del lines[i: j - 1]
     text = '\n'.join(lines)
     return text
+
+def RemoveLineBreaks(text: str) -> str:
+    '''
+    delete redundant line breaks
+    '''
+    paras = text.split('\n\n')
+    paras = [para.replace('\n', ' ') for para in paras]
+    text = '\n'.join(paras)
+    return text

@@ -7,7 +7,8 @@ if __name__ == '__main__':
     # parser.add_argument('--conf', type=str, default='./settings/example.json')
     parser.add_argument('--conf', type=str, default='./settings.json')
     parser.add_argument('--f', type=int, default=0)
+    parser.add_argument('--o', type=int, default=0)
     args = parser.parse_args()
 
     # run zhem
-    ret_args = run_zhem(args.conf, args.f)
+    ret_args = run_zhem(args.conf, args.f, args.o)

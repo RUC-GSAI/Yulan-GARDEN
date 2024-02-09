@@ -27,11 +27,7 @@ class Logger():
             self.logger.error(text)
         else:
             raise Exception(f"illegal mode {desc} in func log_text()...")
-        
-# global_logger = Logger(
-#     name = "Global Logger",
-#     file = "./bash/log/global_log.txt"
-# )
+
         
 global_logger = Logger(
     name = "Global Logger"

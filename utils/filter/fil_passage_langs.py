@@ -8,7 +8,7 @@ class FilterPassageByLangs(FilterBase):
     '''
     def __init__(self) -> None:
         self.language_identifier = LangIdentifier(
-            model_path="/fs/archive/share/u2022101014/models/fasttext/lid.176.bin"
+            model_path="utils/models/fasttext/lid.176.bin"
         )
         # used in ccnet to filter common crawl
         self.reject_threshold = 0.5

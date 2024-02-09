@@ -7,8 +7,6 @@ from tqdm import tqdm
 
 from utils.utils import *
 
-# from utils.utils.load_modules import modulemanager
-
 import os   
 
 from ast import literal_eval
@@ -84,38 +82,45 @@ def prepare_jsonl_files(settings: dict):
                 output_source_value=output_source_value
             )
 
-
 def sample_debug(settings: dict, option: str):
     '''
     step 2 and 4: sample texts from raw/refined data, analyse by debugger
     '''
     assert option in ['raw', 'refined']
     input_path, input_ext, input_text_key, output_path, output_source_value = settings['input_path'], settings['input_ext'], settings['input_text_key'], settings['output_path'], settings['output_source_value']
+    IF_SAMPLE = settings['debug_paras']['if_sample']
     
     debugger_module = Debugger(settings, option)
-    work_path = os.path.join(output_path, '.tmp')
+    if option == 'raw':
+        work_path = os.path.join(output_path, '.tmp')
+    else:
+        work_path = os.path.join(output_path, 'out/dedup.jsonl') if settings['if_dedup'] else os.path.join(output_path, 'out/tmp.jsonl') 
 
     # generate debugger report
     debugger_worklist = prepare_works(work_path, input_ext='jsonl')
     # sample 'debug_sample_num_per_file' lines of each file in debugger_worklist
     sampler_config = {'input_path': debugger_worklist,
         'output_path': os.path.join(settings['output_path'], f'{option}.jsonl'),
+        'if_sample': IF_SAMPLE,
         'if_sample_randomly': True,
         'SAMPLE_RANDOMLY_NUM': settings['debug_paras']['debug_sample_num_per_file']}
     sampler = Sampler(SampleConfig(sampler_config))
     sampler.sample_randomly_works()     
-    with open(os.path.join(settings['output_path'], f'{option}.jsonl'), mode='r', encoding='utf-8') as fr:
+    debug_path = os.path.join(settings['output_path'], f'{option}.jsonl')
+
+    with open(debug_path, mode='r', encoding='utf-8') as fr:
         cnt = 0
         for line in fr:
             cnt += 1
-            # text = json.loads(line)[input_text_key]
-            text = literal_eval(line)[input_text_key]
+            text = json.loads(line)[input_text_key]
+            # text = literal_eval(line)[input_text_key]
             debugger_module.debug_single_text(text)
     ppls = debugger_module.debug_params_report()
+    with open(f'tmp/ppl_{option}.json', 'w') as fw:
+        json.dump(ppls, fw, indent=4)
     global_logger.log_text(f"for {option} data: generating debug report {debugger_module.debug_report_path} finish..")
     if ppls:
-        modulemanager.filter_module.filter_ops['FilterPassageByPPL'].calc_filter_threshold(ppls)
-    print(f"!!!!!!{modulemanager.filter_module.filter_ops['FilterPassageByPPL'].ppl_filter_thresholds}")
+        modulemanager.filter_module.filter_ops['FilterPassageByPPL'].calc_filter_threshold(ppls, settings['filter_paras']['fil_ppl']['param'])
 
 def refining_process(settings: dict):
     '''
@@ -162,13 +167,12 @@ def refining_process(settings: dict):
             dedupicator_module.dedup()
             global_logger.log_text(f"Deduplicated data dir: {os.path.join(output_path, 'out/dedup.jsonl')}")
 
-
 def sample_compare_results(settings: dict):
     '''
     step 5: sample few texts from raw data and clean them only by cleaner
     '''
     input_path, input_ext, input_text_key, output_path, output_source_value = settings['input_path'], settings['input_ext'], settings['input_text_key'], settings['output_path'], settings['output_source_value']
-    work_path = os.path.join(output_path, 'out/dedup.jsonl') if settings['if_dedup'] else os.path.join(output_path, 'out/tmp.jsonl')
+    work_path = prepare_works(os.path.join(output_path, '.tmp'), input_ext)
 
     sampler_config = {'input_path': work_path,
         'output_path': os.path.join(output_path, 'presentation.jsonl'),
@@ -230,8 +234,6 @@ def process_work(conf: Settings, option: int=0):
             json.dump(modulemanager.filter_module.filter_ops["FilterPassageByPPL"].ppl_filter_thresholds, fw)
     
     elif option == 2: 
-        print(f"!!!!!!{modulemanager.filter_module.filter_ops['FilterPassageByPPL'].ppl_filter_thresholds}")
-
         # 前端需要处理一下这个部分，如果返回了warning_str，就不显示之后的按钮，只显示warning_str和返回主页面的按钮
         if not(settings['if_clean'] or settings['if_filter'] or settings['if_dedup']):
             warning_str = 'No cleaner, filter and deduplicator, please make sure some options become \'true\' in your setting file.'
@@ -275,9 +277,9 @@ def process_work(conf: Settings, option: int=0):
         refining_process(settings)
         if settings['if_debug']:        
             sample_debug(settings, 'refined')
-        # if no cleaner and no filter, sample_compare_results should not be executed
-        if settings['if_clean'] or settings['if_filter']:
-            sample_compare_results(settings)
-        else:
-            return {'if_compare': False}
+        # # if no cleaner and no filter, sample_compare_results should not be executed
+        # if settings['if_clean'] or settings['if_filter']:
+        #     sample_compare_results(settings)
+        # else:
+        #     return {'if_compare': False}
 

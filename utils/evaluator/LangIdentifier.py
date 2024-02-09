@@ -8,7 +8,7 @@ from tqdm import tqdm
 from collections import defaultdict
 
 class LangIdentifier(EvaluatorBase):
-    def __init__(self, model_path: str="/fs/archive/share/u2022101014/models/fasttext/lid.176.bin"):
+    def __init__(self, model_path: str="utils/models/fasttext/lid.176.bin"):
         self.input_path = ""
         self.output_path = ""
         self.reject_threshold = 0.5
@@ -33,7 +33,7 @@ class LangIdentifier(EvaluatorBase):
 
 if __name__ == '__main__':
     langidentifier = LangIdentifier(
-        model_path="/fs/archive/share/u2022101014/models/fasttext/lid.176.bin"
+        model_path="utils/models/fasttext/lid.176.bin"
     )
     texts=[
        "I love openai too much! It invented ChatGPT and GPT4 such tramendous inventions!!",

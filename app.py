@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, render_template, request, send_from_directory, session, redirect, url_for
+from flask import Flask, render_template, request, session
 from datetime import timedelta
 from utils.quick_start import run_zhem
 from time import sleep, time
@@ -9,11 +9,6 @@ import jsonlines
 from utils.utils.logger import global_logger
 from utils.retriever.elasticobj import ElasticObj
 
-from fastapi import FastAPI, Form
-import uvicorn as u
-from starlette.requests import Request
-from starlette.staticfiles import StaticFiles
-from starlette.templating import Jinja2Templates
 import datetime
 
 
@@ -21,7 +16,7 @@ class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, timedelta):
             return str(obj)
-        # 其他需要处理的类型
+        # other types
         return super().default(obj)
 
 
@@ -93,12 +88,12 @@ def get_files_in_folder(folder_path):
 
 def access_nested_dict(data, keys, new_value=None):
     '''
-    修改嵌套字典的值
+    modify the value of a nested dictionary
     '''
     if len(keys) == 0 or new_value is None or new_value == '':
         return data
     key = keys[0]
-    # 递归终止
+    # recursion termination
     if len(keys) == 1:
         if key in data:
             data[key] = _type_conversion(new_value, type(data[key]))
@@ -141,7 +136,7 @@ def create_ElasticObj_index(config, data_type):
     print(obj.es)
     obj.create_index(obj.index_name)
     if data_type == '_refined':
-        ### --------- 读文件 ---------
+        ### --------- read the file ---------
         print(f"Reading file {config['output_path']}...")
         t1 = time()
         if config['if_dedup']:
@@ -149,7 +144,7 @@ def create_ElasticObj_index(config, data_type):
         else:
             data = read_data(os.path.join(config['output_path'], 'out/tmp.jsonl'))
     else:
-        ### --------- 读文件 ---------
+        ### --------- read the file ---------
         print(f"Reading file {config['input_path']}...")
         t1 = time()
         if config['if_dedup']:
@@ -160,14 +155,15 @@ def create_ElasticObj_index(config, data_type):
     total_num = len(data)
     print("%s items loaded." % total_num)
     t2 = time()
-    obj.bulk_Index_Data(data) # 20w/min; 6k-1.44s; 270k-77s
+    obj.bulk_Index_Data(data)
     print("Insert time: {:.2f}s".format(time()-t2))
 
 
-# this function can't be used because of no elasticsearch engine in this machine
+
 def query_arxiv(text, qtype, data_type):
     '''
     query -> retrieved results
+    # for elasticsearch engine
     '''
     _candidates = []
 
@@ -181,14 +177,14 @@ def query_arxiv(text, qtype, data_type):
         }
     }
     _doc['query']['multi_match']['query'] = text
-    _doc['size'] = 50 # 最多返回50条
+    # max size: 50
+    _doc['size'] = 50 
     globals()[f'es_obj_{qtype}{data_type}'] = ElasticObj(index_name=f'{qtype}{data_type}')
     hits = globals()[f'es_obj_{qtype}{data_type}'].Get_Data_By_Body(_doc)
 
     for hit in hits:
         candidate = {}
         candidate["text"] = hit["_source"]["text"]
-        # candidate["source"] = hit["_source"]["source"]
         candidate["score"] = hit["_score"]
         _candidates.append(candidate)
 
@@ -217,37 +213,6 @@ def add_data_information(refined_data_path, config):
     with open(refined_data_path, 'w') as fw:
         json.dump(refined_data, fw, indent=4, ensure_ascii=False)    
 
-# no use in new version
-def retrieve(retriever_source, key_words):
-    '''
-    for debug
-    '''
-    texts = ['I am a robot', 'ZHEM: A Synthetic Data Processing Pipeline for Large Language Models', '存在的问题：直到清洗完成后页面才会完成跳转，希望在清洗时展示一个“清洗中”的页面，清洗结束后展示“清洗以完成”的页面', '比较 oasis, data-juicer 和我们工作的优劣', '对统一cleaner进行单元测试，添加email/phone/ip/idcard等预定义清洗算子；开始拆解filter，删除meta算子']
-    return texts
-
-# no use in new version
-def process_data():
-    '''
-    for debug
-    '''
-    for i in range(10):
-        sleep(1)
-        global_logger.log_text('{}: for test\n'.format(i))
-
-# no use
-def sample(input_path, sample_length=10):
-    '''
-    sample texts from sampler
-    '''
-
-    '''
-    for debug
-    '''
-    origin_texts = ['I am a robo\pt', 'ZHE M: A Synthetic\n Data Processing Pipeline for Large Language Models', '  - 存在的问题：直到清洗完成后页面才会完成跳转? ? ，希望在清洗时展示一个“清洗中”的页面，清洗结束后展示“清洗以完成”的页面', '  [] 比较 oasis, data-juicer 和我们工作的优劣', '对统一cleaner进行单元测试，添加email/phone/ip/idcard等预定义清洗算子；开始拆解filter，删除meta算子']
-    refined_texts = ['I am a robot', 'ZHEM: A Synthetic Data Processing Pipeline for Large Language Models', '存在的问题：直到清洗完成后页面才会完成跳转，希望在清洗时展示一个“清洗中”的页面，清洗结束后展示“清洗以完成”的页面', '比较 oasis, data-juicer 和我们工作的优劣', '对统一cleaner进行单元测试，添加email/phone/ip/idcard等预定义清洗算子；开始拆解filter，删除meta算子']
-    return list(zip(*[origin_texts, refined_texts]))
-
-
 
 app = Flask(__name__)
 app.secret_key = '123'
@@ -257,16 +222,14 @@ app.secret_key = '123'
         session['config_name']: name of the config
 '''
 processing_done = threading.Event()
-# 获取settings文件夹下的所有配置文件列表
+# folder of configs 
 settings_folder = 'settings'
 tmp_folder = 'tmp'
 log_path = os.path.join(tmp_folder, 'process.log')
-# {dataset name: [{'input_path': config['input_path'], 'output_path': config['output_path']}]}
 refined_data_path = os.path.join(tmp_folder, 'refined_data.json')
 example_path = 'settings/example.json'
 data_names = get_data_names(refined_data_path)
-# app.mount("/static", StaticFiles(directory="static"), name="static")
-# 将自定义的JSON编码器类设置为app的json_encoder
+# set the custom JSON encoder class to the app's json_encoder
 app.json_encoder = CustomJSONEncoder
 if not os.path.exists(tmp_folder): os.mkdir(tmp_folder)
 
@@ -296,31 +259,31 @@ def show_config():
         with open(log_path, 'w') as fw:
             pass
         select_config = request.form.get('select_config')
+        print(select_config)
         custom_file = request.form.get('custom_config')
-        retrever_back = request.form.get('retrever_back')
+        retriever_back = request.form.get('retriever_back')
         if select_config:            
-            # 如果选择了已有配置文件，则读取该文件并展示给用户
+            # if an existing configuration file is selected, it will be read and displayed to the user
             with open(os.path.join(settings_folder, select_config)) as fr:
                 config = json.load(fr)
                 session['retriever_source'] = 'input_path'
 
-            ### ------------------ es ------------------
-            # create_ElasticObj_index(config=config, data_type='_raw')
-            ### ------------------ es ------------------
+            ## ------------------ es ------------------
+            create_ElasticObj_index(config=config, data_type='_raw')
+            ## ------------------ es ------------------
             data_names.add(config['output_source_value'].lower())
+            # save the name of config for Processing access
+            session['config_name'] = select_config
 
             zhem_ret_args = run_zhem(os.path.join(settings_folder, session['config_name']), 1, 1)   
 
             if config['if_debug']:
-                # figs_list = get_files_in_folder(os.path.join(config['output_path'], 'figs/'))
                 figs_list = get_files_in_folder('static/raw_figs/')
                 with open(config['debug_paras']['debug_report_path'], 'r') as fr:
                     debug_file = json.load(fr)
                 ret_args = {'if_debug': True, 'debug_path': config['debug_paras']['debug_report_path'], 'figs_list': figs_list, 'debug_file': json.dumps(debug_file, indent=4, ensure_ascii=False)}
             else:
                 ret_args = {'if_debug': False}   
-            # # sample texts from 'input_path', return the sample list and refined list
-            # sample_results = sample(config['input_path'])
             if zhem_ret_args and 'warning' in zhem_ret_args:                
                 ret_args['warning'] = zhem_ret_args['warning']
 
@@ -328,44 +291,39 @@ def show_config():
             with open(os.path.join(tmp_folder, 'ret_args.json'), 'w') as fw:
                 json.dump(ret_args, fw, indent=4)
 
-            # 使用json格式化展示配置信息
+            # json format
             config_formatted = json.dumps(config, indent=4, ensure_ascii=False)
-            # 将config的名字保存，便于processing访问
-            session['config_name'] = select_config
+            
             return render_template('show_config.html', config=config_formatted, ret_args=ret_args)  
         
         elif custom_file:
-            # 如果选择了自定义配置文件，则从表单中获取各个参数的值，并保存为新的配置文件
+            # if a custom configuration file is selected, retrieve the values of each parameter from the form and save it as a new configuration file
             config = load_parameter_definitions(example_path)
             session['retriever_source'] = 'input_path'
             for key, value in request.form.items():
                 keys = key.split('.')          
                 access_nested_dict(config, keys, value)
 
-            ### ------------------ es ------------------
-            # create_ElasticObj_index(config=config, data_type='_raw')
-            ### ------------------ es ------------------
+            ## ------------------ es ------------------
+            create_ElasticObj_index(config=config, data_type='_raw')
+            ## ------------------ es ------------------
             data_names.add(config['output_source_value'].lower())
 
-            # 生成一个配置文件名，并将该文件保存到settings文件夹下
+            # generate a configuration file name and save it to the settings folder
             new_config_file = custom_file + '.json'
             with open(os.path.join(settings_folder, new_config_file), 'w') as fr:
                 json.dump(config, fr, indent=4)
-            # 使用json格式化展示配置信息
             config_formatted = json.dumps(config, indent=4, ensure_ascii=False)
 
             zhem_ret_args = run_zhem(os.path.join(settings_folder, session['config_name']), 1, 1)   
 
             if config['if_debug']:
-                # figs_list = get_files_in_folder(os.path.join(config['output_path'], 'figs/'))
                 figs_list = get_files_in_folder('static/raw_figs/')
                 with open(config['debug_paras']['debug_report_path'], 'r') as fr:
                     debug_file = json.load(fr)
                 ret_args = {'if_debug': True, 'debug_path': config['debug_paras']['debug_report_path'], 'figs_list': figs_list, 'debug_file': json.dumps(debug_file, indent=4, ensure_ascii=False)}
             else:
                 ret_args = {'if_debug': False}   
-            # # sample texts from 'input_path', return the sample list and refined list
-            # sample_results = sample(config['input_path'])
             if zhem_ret_args and 'warning' in zhem_ret_args:                
                 ret_args['warning'] = zhem_ret_args['warning']
 
@@ -373,14 +331,13 @@ def show_config():
             with open(os.path.join(tmp_folder, 'ret_args.json'), 'w') as fw:
                 json.dump(ret_args, fw, indent=4)
 
-            # 将config的名字保存，便于processing访问
+            # save the name of config for Processing access
             session['config_name'] = new_config_file            
             return render_template('show_config.html', config=config_formatted, parameter_definitions=load_parameter_definitions(example_path))     
-        elif retrever_back:
-            # 如果选择了已有配置文件，则读取该文件并展示给用户
+        elif retriever_back:
+            # if an existing configuration file is selected, it will be read and displayed to the user
             with open(os.path.join(settings_folder, session['config_name'])) as fr:
                 config = json.load(fr)
-            # 使用json格式化展示配置信息
             config_formatted = json.dumps(config, indent=4, ensure_ascii=False)
             with open(os.path.join(tmp_folder, 'ret_args.json'), 'r') as fr:
                 ret_args = json.load(fr)
@@ -391,8 +348,9 @@ def show_config():
 @app.route('/retriever', methods=['POST', 'GET'])
 def retriever():
     if request.method == 'POST':
-        retreve_task = request.form.get('retrieve_task')
-        if retreve_task:            
+        retrieve_task = request.form.get('retrieve_task')
+        if retrieve_task:       
+            print(session['retriever_source'])     
             return render_template('retriever.html', data_names=data_names, source=session['retriever_source'])
     return render_template('retriever.html', data_names=data_names)
     
@@ -408,7 +366,6 @@ def read_text():
         res = query_arxiv(query, qtype, data_type)
         time_cost = round(time() - t1, 3)
         n = len(res)
-        # 打印当前时间的query
         now_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(now_time + " _Query_: " + query)
         
@@ -432,7 +389,7 @@ def processing():
         # from page: processing
         confirm = request.form.get('confirm')
         # from page: retriever
-        retrever_back = request.form.get('retrever_back')
+        retriever_back = request.form.get('retriever_back')
         if confirm:
             # # data refined process
             # process_data()
@@ -461,13 +418,13 @@ def processing():
 
             # # add data imformation (know about the input_path and output_path of all the refined data)
             add_data_information(refined_data_path, config)
-            ### ------------------ es ------------------
-            # create_ElasticObj_index(config=config, data_type='_refined')
-            ### ------------------ es ------------------
+            ## ------------------ es ------------------
+            create_ElasticObj_index(config=config, data_type='_refined')
+            ## ------------------ es ------------------
 
             return render_template('processing.html', ret_args=ret_args, source=session['retriever_source'])
         
-        if retrever_back:
+        if retriever_back:
             with open(os.path.join(settings_folder, session['config_name']), 'r') as fr:
                 config = json.load(fr)
 
@@ -483,8 +440,7 @@ def processing():
 
 @app.route('/read_log', methods=['POST'])
 def read_log():
-    # 处理log文件的内容，并返回响应
-    # 例如从文件中读取内容
+    # process the content of the log file and return a response
     with open(log_path, 'r') as fr:        
         log_content = fr.read()
     return log_content

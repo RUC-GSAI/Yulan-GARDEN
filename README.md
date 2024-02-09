@@ -1,97 +1,95 @@
-# ZHEM
+# ZHEM: An Integrated Data Processing Framework for Pretraining Foundation Models
 
-## Introduction
+Authors: Yiding Sun*, Feng Wang*, Yutao Zhu, Wayne Xin Zhao, Jiaxin Mao
 
-ZHEM is a Chinese(ZH-*, like zh-cn, zh-tw and so on) Natural Language data Processing Pipeline for pretraining Large Language Models(LLMs), developed by [@Emanual20](https://github.com/Emanual20) and [@PhealenWang](https://github.com/PhealenWang) from Renmin University of China, supervised by [@defaultstr](https://github.com/defaultstr).
+\[[Github Repo](https://github.com/Emanual20/ZHEM)\] \[[Demo Video](https://drive.google.com/file/d/12StUSb-6Q3ej3Qnzi74kkcJkkqxwWccu)\]
 
-The target datasets of this pipeline are mainly larger than 100GB. Time cost will be prohibitively long when only single process is used. As a result, we introduced multi-processing to this pipeline.
+## Introduction 
 
-Since the nodes for processing data, the optimized parameter of filter rules and the cleaning demands (Whether the raw data contains <html> label? Which regular expressions should be used?) may vary to a large extent among different user groups. We offer a flexible way, json files to be specific, to config the settings.
+The ability of the foundation models heavily relies on large-scale, diverse, and high-quality pretraining data. 
+In order to improve data quality, researchers and practitioners often have to manually curate datasets from difference sources and develop dedicated data cleansing pipeline for each data repository.    
+Lacking a unified data processing framework, this process is repetitive and cumbersome.
+
+To mitigate this issue, we propose this data processing framework **ZHEM** that integrates a **Processing Module** which consists of a series of operators at different granularity levels, and an **Analyzing Module** which supports probing and evaluation of the refined data. 
+Instead of Code, we first introduce how to use this framework with some example use cases and then demonstrate its effectiveness in improving the data quality with an automated evaluation with ChatGPT and an end-to-end evaluation in pretraining the GPT-2 model.
+
+More Details an be found in our [Paper]().
+
+
 
 ## Quick Start
 
 First, install the requirement packages declared by `requirements.txt`. 
 
-Modify settings/example.json on your desired processing procedure. The configuration file may contains many options. For example, if you want to use regular expressions to match some dirty tokens, you should add your own regular expressions into `re_list` of `rm_re_rules`. Also, make sure value of `use` of its father components (i.e. `rm_re_rules` and `if_clean`) are `true`. Similar modifications for other settings.
+Modify [settings/example.json](./settings/example.json) on your desired processing procedure. The configuration file may contains many options. For example, if you want to use regular expressions to match some dirty tokens, you should add your own regular expressions into `re_list` of `rm_re_rules`.
 
-Copy raw data to input_path in `settings/example.json`. And make sure the output_path not exists, otherwise the output path will be covered by temporary and output files.
+Copy raw data to input_path in `settings/example.json`. And make sure the output_path not exists, otherwise the output path will be overwritten.
 
 ```{commandline}
 pip install -r requirements.txt
 cp <raw_data> /path/to/input_path
-mkdir /path/to/output_path
-python main.py --conf settings/example.json
 ```
 
 Then the processing pipeline will generate an `debug_report.json` into /path/to/report_path defined in `settings/example.json`. The report displayed filter ratio of each filter rules, as well as match ratio, time cost and match cases of each regular expression cleaner rules and so on.
 
-After running the processing pipeline, the cleaned data will be merged as a `.jsonl` file, while there is just one record in a line. The record is in the form of `json`, with two keys `text` and `source`, representing processed text and source of raw data accordingly.
+```{commandline}
+python main.py --conf settings/example.json
+```
+
+After running the processing pipeline, the cleaned data will be merged as a `.jsonl` file, while there is just one record in a line. The record is in the form of `json`, with the field `text`, representing the refined text.
 
 ## Basic Components
 
-The basic components of ZHEM pipeline are illustrated as follows.
+![Basic components of ZHEM pipeline](assets/ZHEM_figure_2.png)
 
-![Basic components of ZHEM pipeline](assets/ZHEM.png)
+ZHEM framework consists of two main modules, the Processing Module and Analyzing Module. The Usage Details can be found README.md in corresponding directories.
 
-### Loading Configuration Settings
+### Processing Module 
 
-### Rearranger 
+Processing Module can refine the raw datasets by unifying different formats, filtering and denosing irrelevant information, and deduplicating. The Processing Module consists of four components: [Reformatter](./utils/workers/reformatter.py), [Filter](./utils/workers/filter.py), [Cleaner](./utils/workers/cleaner.py), and [Deduplicator](./utils/workers/deduplicator.py). The details of each component can be found [here](./utils/workers/README.md).
 
-### Debugger
+### Analyzing Module
 
-Debugger (`./utils/workers/debugger.py`) is a module to give a report (default path: `./debug_report.json`) for `Filter` hyperparameters and `Cleaner` details from a small sample from the whole data. You can set `if_debug` in `settings.json` as `true` to make it work.
+Analyzing Module helps users facilitate a more profound comprehension of datasets through statistics analysis, specific domain knowledge retrieval, and parameter analysis of Filter and match cases of Cleaner. There are three components in the Analyzing Module, including [Evaluator](./utils/evaluator/README.md), [Retriever](./utils/retriever/README.md), and [Debugger](./utils/workers/README.md).
 
-In `Filter` report, Debugger lists some values of hyperparameters and corresponding filter ratio for users to choose the appropriate values of hyperparameters according to a certain filter ratio. Make sure value of `use` of the filter rules (`debug_paras` in `settings.json`) are `true`.
+## Experiments
 
-In `Cleaner` report, for each rule in Cleaner, Debugger includes the match ratio, which is number of successful matches divided by the total texts traversed by Debugger, the average execution time and some match cases. All of the information helps users judge whether the rule works in Cleaner. Make sure value of `use` of the cleaner rules (`clean_paras` in `settings.json`) are `true`.
+We conduct two experiments to validate the effectiveness of ZHEM in improving the data quality. Through automated evaluation with ChatGPT, we observe a significant improvement in the quality of refined dataset when applied to OpenWebText2, Wikipedia, and HackerNews. In the end-to-end evaluation, we train two GPT-2 models using CommonCrawl before and after processing, respectively. The model trained on the refined data demonstrates remarkable performance enhancement across downstream tasks of language modeling compared to the baseline.
 
-Besides, `debug_find_cases` helps developers find the texts which contain certain key words using the form of regular expressions. The report of `debug_find_cases` is in `Cleaner` report.
+### Automated Evaluation
 
-### Extractor
+We adopt ChatGPT as an automated evaluation tool for data quality, utilizing its powerful ability of instruction following.  We evaluate which data~(i.e., before and after processing) is more suitable for training LLMs. Specifically, ChatGPT is prompted to consider various dimensions such as text formatting, fluency, coherence, and informativeness. Data pairs that are identical before and after processing, and exceed the ChatGPT's context length limitation are excluded.
 
-### Filter
+The experimental results are shown in table.
+On all datasets, our processed dataset significantly outperforms the raw dataset in terms of data quality.
 
-Filter (`./utils/workers/filter.py`) is a module to filter the useless or sensitive texts, including 4 different rules:
+| Datasets | \#Win | \#Lose | \#Tied |
+|---------|-----|-----|-----|
+|Openwebtext2|338|162|0|
+|Wikipedia(en)|333|161|6|
+|HackerNews|382|112|6|
 
-1. `fil_short_texts`: short texts (hyperparamter: minimum length of the texts, default: 170).
+### End-to-end Evaluation
 
-2. `fil_non_ch`: non-Chinese texts (hyperparamter: biggest ratio of non-Chinese characters , default: 0.4).
+To evaluate the data quality more intuitively, we trained a GPT-2 model using the raw and refined data respectively, denoted as GPT-2-raw and GPT-2-ref. We evaluated the language modeling capabilities of LLMs on other corpora in an end-to-end manner.
 
-3. `fil_copyright`: 'Copyright' texts.
+The evaluation results are shown as follows.
+Notably, GPT-2-ref achieves the same loss as GPT-2-raw after only 0.25M steps, whereas GPT-2-raw reaches that level after 2M steps. 
+Across all datasets, GPT-2-ref exhibits superior performance compared to GPT-2-raw. 
+Additionally, the PPL of GPT-2-ref on the LAMBADA and WikiText103 datasets demonstrate a noticeable trend of faster decrease compared to GPT-2-raw in the initial stage.
+It indicates that utilizing our proposed data processing framework enhances both the efficiency and effectiveness of training foundation models.
 
-4. `fil_short_lines`: texts with too many short lines (hyperparamter: biggest ratio of short lines, short lines means the length of the line is less than 3, default: 0.25).
+| Models | LAMBADA(PPL) | WikiText103(PPL) | 1BW(PPL) | CBT-CN(ACC) | CBT-NE(ACC) |
+|---------|-----|-----|-----|-----|-----|
+|GPT-2-raw|134.04|97.32|220.50|61.05|44.48|
+|GPT-2-ref|**122.43**|**81.98**|**175.59**|**72.60**|**50.98**|
 
-5. `fil_dirty_words`: dirty words.
+![Performance as a function of training steps](assets/training_step_loss_ppl.png)
 
-6. `fil_my_rules`: other custom rules. To make ZHEM more flexible, you can set your custom rules in `./utils/utils/my_rules.py` as functions and add the names of the functions into the setting files.
+## Citations
 
+If you find our work useful, please cite this repository or our paper: 
 
-All the hyperparamters are changable in the light of `Debugger`.
-
-### Cleaner
-
-Cleaner (`./utils/workers/cleaner.py`) is a module to clean the dirty substrings in the texts, including 6 different parts:
-
-1. `extractor`: in [Extractor]().
-
-2. `rm_crawlerchars`: remove the unused patterns in the text (e.g. '&nbsp').
-
-3. `sub_newline`: remove consecutive newlines in the text.
-
-4. `rm_re`: remove regular expressions.
-
-5. `sub_re`: substitute regular expressions.
-
-6. `rm_str`: remove raw strings.
-
-7. `rm_re_lines`: remove **a line** if any text fragments in this line matching any of **regular expressions** in `re_list`.
-
-8. `rm_str_lines`: remove **a line** if any text fragments in this line matching any of **string** in `str_list`".
-
-9. `rm_str_seg`: remove **a segment** after matching any of **string** in `str_list` if any text fragments in this text are matched.
-
-10. `tra2sim`: convert Traditional Chinese to Simplified Chinese.
-
-11. `my_funcs`: other custom rules. You can set your custom rules in `./utils/utils/my_funcs.py` as functions and add the names of the functions into the setting files. 
-
-### Deduplicator
+```
+TBU
+```

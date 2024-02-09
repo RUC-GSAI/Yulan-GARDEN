@@ -1,0 +1,3 @@
+To conduct the analysis of statistical features of both the raw dataset and refined dataset, Evaluator employs a visualization approach to present the data distribution (perplexity, language, etc.) in a user-friendly manner.
+
+Additionnally, Evaluator evaluates the texts in three manners, language identifier by [fasttext](https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin), perplexity evalutor by [kenlm](https://huggingface.co/edugp/kenlm/tree/main/wikipedia) and text scores by ChatGPT.

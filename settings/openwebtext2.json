@@ -1,0 +1,244 @@
+{
+    "input_path": "/input_path/to/openwebtext2",
+    "input_ext": "jsonl",
+    "input_text_key": "text",
+    "output_path": "/output_path/to/openwebtext2",
+    "output_source_value": "openwebtext2",
+    "if_filter": true,
+    "filter_paras": {
+        "fil_my_rules": {
+            "comments": "To make ZHEM more flexible, we have added a new filtering interface that allows users to add custom filter rules to 'utils/utils/my_rules.py'.",
+            "use": false,
+            "rules": [
+
+            ]
+        },
+        "fil_dirty_words": {
+            "comments": "Remove the text if the words in 'words' appear in the text.", 
+            "use": true,
+            "words": [
+                "Check out our new site Makeup Addiction",
+                "add your own caption",
+                "click to enlarge"
+            ]
+        },
+        "fil_langs": {
+            "use": false,
+            "accept_lang_list": ["en"]
+        },
+        "fil_ppl": {
+            "use": true,
+            "param": 1
+        },
+        "fil_lang_score": {
+            "use": false,
+            "reject_threshold": 0.5
+        },
+        "fil_short_texts": {
+            "use" : true,
+            "param": 200
+        },
+        "fil_non_ch": {
+            "use": false,
+            "param": 0.4
+        },
+        "fil_alphanum": {
+            "use": false,
+            "lower_bound": 0.0,
+            "upper_bound": 1.0
+        },
+        "fil_copyright": {
+            "use": false,
+            "ch_list":[
+            ],
+            "en_list": [
+            ]
+        },
+        "fil_short_lines": {
+            "use": false,
+            "param": 0.25,
+            "lower_bound": 3
+        }
+    },
+    "if_clean": true,
+    "clean_paras": {
+        "extractor": {
+            "use": false,
+            "mode": {"html": false, "mobi": false, "epub": false},
+            "keep_newline_labels": [
+                
+            ]
+        },
+        "my_funcs": {
+            "comments": "To make ZHEM more flexible, we have added a new cleaning interface that allows users to add custom cleaning functions to 'utils/utils/my_funcs.py'.",
+            "use": false,
+            "funcs": [
+                "for_bdbk"
+            ]
+        },
+        "rm_crawlerchars": {
+            "use": true
+        },
+        "sub_newline": {
+            "use": false
+        },
+        "rm_re_rules": {
+            "comments": "remove text fragments matching any of regular expressions in `re_list`",
+            "use": true,
+            "re_list": [
+                "\\-\\-\\-+",
+                "===+",
+                "\\—\\—\\—+",
+                "\\n[,0-9]+ shares",
+                "\\*( \\*)+",
+                "____+",
+                "\\*\\*\\*+",
+                "###+"
+            ]
+        },
+        "sub_re_rules": {
+            "comments": "substitute(replace) text fragments by any <key, value> pair of `re_dict`, key is an regular expression, value is an plain text",
+            "use": true,
+            "re_dict": {
+                "\\n\\)": "\\n",
+                "\\nADVERTISEMENT\\n": "\\n",
+                "\\n\\–\\n": "\\n",
+                "\\nLess\\n": "\\n",
+                "\\nAD\\n": "\\n",
+                "\\nFigure [0-9]+\\n": "\\n"
+            }
+        },
+        "rm_str_rules": {
+            "comments": "remove text fragments matching any of strings in `str_list`",
+            "use": true,
+            "str_list": [
+                "﻿",
+                "Photo via Facebook"
+            ]
+        },
+        "rm_re_lines": {
+            "comments": "remove **a line** if any text fragments in this line matching any of **regular expressions** in `re_list`",
+            "use": true,
+            "re_list": [
+                "[0-9]+ comments",
+                "\\(Image:"
+                
+            ]
+        },
+        "rm_str_lines": {
+            "comments": "remove **a line** if any text fragments in this line matching any of **string** in `str_list`",
+            "use": true,
+            "str_list": [
+                "Bitcoin donations:",
+                "Copyright ",
+                "Follow us ",
+                "This article is more than",
+                "Advertisement",
+                "Related:",
+                "Images:",
+                "HITS:",
+                "MISSES:",
+                "READ:",
+                "READ MORE",
+                "Photo:",
+                "Also read:",
+                "<video:",
+                "Tags:",
+                "Advertisement:",
+                "Updated:",
+                "Download ",
+                "Credits",
+                "\\(Via ",
+                "Written by",
+                "Drawn by",
+                "Read More",
+                "\\nConnect with",
+                "CLICK HERE TO GET",
+                "\\* \\* \\*"
+            ]
+        },
+        "rm_str_seg": {
+            "comments": "remove **a segment** after matching any of **string** in `str_list` if any text fragments in this text are matched",
+            "use": true,
+            "str_list": [
+                "___",
+                "\nRead more:",
+                "\\nFollow ",
+                "\\nShare this: ",
+                "\\nSource: ",
+                "Like this: Like Loading",
+                "\\nTwitter:",
+                "\\nE-mail:",
+                "\\nLike this:",
+                "\\nTop 10 ",
+                "Click to expand",
+                "\\nMore information",
+                "\\nShare Via",
+                "\\nSources:",
+                "For further information",
+                "\\nContact us"
+            ]
+        },
+        "rm_re_seg": {
+            "comments": "remove **a segment** after matching any of **string** in `str_list` if any text fragments in this text are matched",
+            "use": false,
+            "re_list": [               
+                
+            ]
+        },
+        "tra2sim": {
+            "use": false,
+            "target": "zh-cn"
+        }
+    },
+    "if_dedup": false,
+    "dedup_paras": {
+        "language": "en",
+        "ngram": 5,
+        "num_perm": 128,
+        "min_length": 20,
+        "threshold": 0.7
+    },
+    "if_parallel": false,
+    "parallel_paras": {
+        "comments": "it means if the input data is already cut into pieces",
+        "if_cut": false,
+        "cut_tmpfiles_path": "",
+        "n_process": 10,
+        "chunk_size": -1
+    },
+    "if_debug": false,
+    "debug_paras": {
+        "debug_report_path": "debug_report/openwebtext_debug.json",
+        "debug_cases_num": 5,
+        "debug_sample_num_per_file": 1000,  
+        "debug_find_cases": {
+            "use" : false,
+            "words": [
+                
+            ]
+        },
+        "debug_short_texts": {
+            "use" : true,
+            "length": 200,
+            "if_fix_fil_ratio": false,
+            "exp_fil_ratio": 0.05
+        },
+        "debug_non_ch": {
+            "use": false,
+            "if_fix_fil_ratio": false,
+            "exp_fil_ratio": 0.05
+        },
+        "debug_short_lines": {
+            "use": false,
+            "if_fix_fil_ratio": false,
+            "exp_fil_ratio": 0.05
+        },
+        "debug_langs": {
+            "use": true
+        },
+        "debug_ppl": {
+            "use": true
+        }
+    }
+}

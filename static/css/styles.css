@@ -1,0 +1,298 @@
+body {
+    padding-top: 20px;
+}
+body {
+    height: 100%;
+    width: 100%;
+    min-width: 1000px;
+}
+.page-header {
+    margin-bottom: 40px;
+    /* margin-left: 20px; */
+}
+h1 {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 32px;
+}
+.btn {
+    margin-right: 10px;
+}
+.wrapper {
+    display: flex;
+    height: 100%;
+}
+
+.sidebar {
+    flex: 0 0 auto;
+    width: 180px;
+    background-color: #f0f0f0;
+    padding: 10px;
+    height: 50vh; /* 设置侧边栏的高度为视口高度，使其铺满整个页面 */
+    float: left; /* 将侧边栏浮动到左侧 */
+    margin-left: 95px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.sidebar li.active {
+    font-weight: bold;
+}
+
+.sidebar li.with-indent {
+    padding-left: 20px; /* 为带缩进的元素设置左侧的空白间距 */
+}
+
+.sidebar li.with-indent-active {
+    font-weight: bold;
+    padding-left: 20px; /* 为带缩进的元素设置左侧的空白间距 */
+}
+
+/* show_config */
+.content {
+    flex: 0 0 auto;
+    margin-left: 40px;
+    word-wrap: break-word; /* 使用 word-wrap 控制文本换行 */
+    padding: 10px;
+    overflow: hidden;
+    white-space: nowrap;        
+    text-overflow: ellipsis;
+    display: inline-block; /* 将内容部分变为内联块元素 */
+}
+
+.my-button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: #668cff;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+
+    white-space: nowrap;
+    width: 240px;
+}
+
+.my-button:hover {
+    background-color: #3366ff;
+}
+
+.my-button:active {
+    background-color: #1a53ff;
+}
+
+summary {
+    font-size: 16px; /* 修改字号，根据需要进行调整 */
+    margin-left: 40px; /* 修改左右边距，根据需要进行调整 */
+}
+/* 
+details {
+    position: absolute;
+    width: 100%;
+} */
+
+.details-summary {
+    font-weight: bold;
+    color: blue;
+    cursor: pointer;
+}
+
+.details-summary::before {
+    content: "+";
+    display: inline-block;
+    margin-right: 5px;
+    transition: transform 0.3s;
+}
+
+details[open] .details-summary::before {
+    transform: rotate(45deg);
+}
+
+
+
+.image-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0px;
+    justify-items: left;
+}
+
+.image-item img{
+    width: 305px;
+    height: 290px;
+    object-fit: contain;
+}
+
+.custom-row {
+    width: 600px; /* 替换为你想要的固定宽度值，例如500px */
+}
+
+.form-control {
+    display: inline-block;
+    width: 100%;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 40px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+}
+  
+
+/* 定义隐藏下拉框默认样式及图片覆盖下拉按钮 */   
+.info-select {
+    width: 240px;
+    outline:none;
+    appearance:none;
+    -moz-appearance:none;
+    -webkit-appearance:none;
+    -ms-appearance:none;      
+}
+
+.center-input {
+    display: flex;
+    justify-content: center;
+}
+
+/* table {
+    table-layout: fixed;
+    width: 100%;
+}
+  
+table td {
+    overflow-wrap: anywhere;
+    word-wrap: break-word;
+} */
+
+
+table {
+    /* width: 700px; */
+    width: 100%;
+    /* table-layout: fixed; */
+    border-collapse: collapse;
+  }
+
+table th {
+    text-align: center; /* 居中对齐 */
+    border: 1px solid black;
+    padding: 8px;
+    background-color: lightgray;
+  }
+  
+table td {
+    /* width: 350px; */
+    width: 50%; 
+    border: 1px solid black;
+    padding: 8px;
+    max-width: 20px; /* 设置最大宽度 */
+    word-wrap: break-word;
+    /* word-break: break-all; */
+  }
+  
+
+.blank {
+    height: 23%;
+}
+#search_box {
+    margin-left: 10px;
+    width: 700px;
+    height: 48px;
+    border-radius: 10px 0px 0px 10px;
+    font-size: 20px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+#search_btn {
+    background-color: rgb(167, 6, 6);
+    height: 48px;
+    border-radius: 0px 10px 10px 0px;
+    font-size: 20px; 
+}
+.radio-inline {
+    vertical-align: middle;
+}
+
+.search {
+    /* background-color: lawngreen; */
+    color: red;
+}
+#search_box {
+    height: 48px;
+    border-radius: 10px 0px 0px 10px;
+    font-size: 20px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+#search_btn {
+    background-color: rgb(176, 6, 6);
+    height: 48px;
+    border-radius: 0px 10px 10px 0px;
+    font-size: 20px; 
+}
+
+.t-right-bar {
+    position: fixed;
+    right: 0;
+    bottom: 10%;
+    width: 48px;
+    height: 48px;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+.t-right-bar > div {
+    float: left;
+    height: 45px;
+    line-height: 45px;
+    margin-bottom: 1px;
+    border-radius: 20px 0 0 20px;
+    color: #fff;
+    padding-left: 25%;
+    clear: both;
+    white-space: nowrap;
+    font-size: 13px;
+    font-style: normal;
+    background-color: #aaa;
+    background-repeat: no-repeat;
+    /* background-position: 12px center; */
+    transition: transform .2s cubic-bezier(.215, .61, .355, 1), padding .2s cubic-bezier(.215, .61, .355, 1), margin .2s cubic-bezier(.215, .61, .355, 1), background-color .2s cubic-bezier(.215, .61, .355, 1)
+}
+
+.t-right-bar > div.active, .t-right-bar > div:hover {
+    transform: translateX(-100%);
+    /* padding-left: 45px; */
+    padding-right: 10px;
+    margin-left: 48px;
+    background-color: #23a0e1;
+    text-decoration: none;
+    color: #fff
+}
+
+.t-right-bar img {
+    height: 36px;
+    width: 36px;
+    vertical-align: middle;
+}
+  

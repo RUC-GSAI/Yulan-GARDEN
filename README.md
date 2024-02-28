@@ -2,7 +2,7 @@
 
 Authors: Yiding Sun*, Feng Wang*, Yutao Zhu, Wayne Xin Zhao, Jiaxin Mao
 
-\[[Github Repo](https://github.com/Emanual20/ZHEM)\] \[[Demo Video](https://drive.google.com/file/d/12StUSb-6Q3ej3Qnzi74kkcJkkqxwWccu)\]
+\[[Paper](https://arxiv.org/abs/2402.16358)\] \[[Github Repo](https://github.com/Emanual20/ZHEM)\] \[[Demo Video](https://drive.google.com/file/d/12StUSb-6Q3ej3Qnzi74kkcJkkqxwWccu)\]
 
 ## Introduction 
 
@@ -13,7 +13,7 @@ Lacking a unified data processing framework, this process is repetitive and cumb
 To mitigate this issue, we propose this data processing framework **ZHEM** that integrates a **Processing Module** which consists of a series of operators at different granularity levels, and an **Analyzing Module** which supports probing and evaluation of the refined data. 
 Instead of Code, we first introduce how to use this framework with some example use cases and then demonstrate its effectiveness in improving the data quality with an automated evaluation with ChatGPT and an end-to-end evaluation in pretraining the GPT-2 model.
 
-More Details an be found in our [Paper]().
+More Details an be found in our [Paper](https://arxiv.org/abs/2402.16358).
 
 
 
@@ -91,5 +91,12 @@ It indicates that utilizing our proposed data processing framework enhances both
 If you find our work useful, please cite this repository or our paper: 
 
 ```
-TBU
+@misc{sun2024integrated,
+    title={An Integrated Data Processing Framework for Pretraining Foundation Models},
+    author={Yiding Sun and Feng Wang and Yutao Zhu and Wayne Xin Zhao and Jiaxin Mao},
+    year={2024},
+    eprint={2402.16358},
+    archivePrefix={arXiv},
+    primaryClass={cs.LG}
+}
 ```

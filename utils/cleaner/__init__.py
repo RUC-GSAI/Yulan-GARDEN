@@ -1,3 +1,4 @@
+from utils.cleaner.dedup_line_ngram import CleanerDedupLineByNgram
 from utils.cleaner.rm_line_regexp import CleanerRemoveLineByRegExp
 from utils.cleaner.rm_line_text import CleanerRemoveLineByText
 from utils.cleaner.rm_passage_invisiblechars import CleanerRemovePassageInvisbleChars

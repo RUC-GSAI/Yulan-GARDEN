@@ -143,6 +143,11 @@
         },
         "rm_url": {
             "use": false
+        },
+        "dedup_line_ngram": {
+            "use": false,
+            "n": 5,
+            "thre_sim": 0.95
         }
     },
     "if_dedup": false,

@@ -2,7 +2,10 @@ __pycache__
 *.pyc
 *.json
 bash
+static
 wechat_task
 test_files
 *.old
 process.log
+utils/models/fasttext
+utils/models/kenlm

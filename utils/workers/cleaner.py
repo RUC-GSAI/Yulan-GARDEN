@@ -25,6 +25,7 @@ class Cleaner():
                 "CleanerSubstitutePassageIP": CleanerSubstitutePassageIP(),
                 "CleanerSubstitutePassagePhone": CleanerSubstitutePassagePhone(),
                 "CleanerSubstitutePassageURL": CleanerSubstitutePassageURL(),
+                "CleanerDedupLineByNgram": CleanerDedupLineByNgram(),
             }
 
     def load_settings(self, setting: Settings) -> None:
@@ -47,6 +48,8 @@ class Cleaner():
         self.rm_ip = self.clean_setting['rm_ip']
         self.rm_phone = self.clean_setting['rm_phone']
         self.rm_url = self.clean_setting['rm_url']
+        self.dedup_line_ngram = self.clean_setting['dedup_line_ngram']
+        self.dedup_line_n, self.dedup_line_thresim = self.dedup_line_ngram["n"], self.dedup_line_ngram["thre_sim"]
 
     def clean_single_text(self, text: str) -> str:
         # if self.if_clean == False, then do not clean, just return origin text {{text}}
@@ -93,4 +96,6 @@ class Cleaner():
             text = self.cleaner_ops['CleanerSubstitutePassagePhone'].clean_single_text(text)
         if self.rm_url['use']:
             text = self.cleaner_ops['CleanerSubstitutePassageURL'].clean_single_text(text)
+        if self.dedup_line_ngram['use']:
+            text = self.cleaner_ops['CleanerDedupLineByNgram'].clean_single_text(text, self.dedup_line_n, self.dedup_line_thresim)
         return text

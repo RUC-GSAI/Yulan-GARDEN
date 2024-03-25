@@ -20,6 +20,11 @@ class Cleaner():
                 "CleanerSubstitutePassageRegExp": CleanerSubstitutePassageRegExp(),
                 "CleanerSubstitutePassageBySelfDefinedFunctions": CleanerSubstitutePassageBySelfDefinedFunctions(),
                 "CleanerSubstitutePassageSimplifiedChinese": CleanerSubstitutePassageSimplifiedChinese(),
+                "CleanerSubstitutePassageEmail": CleanerSubstitutePassageEmail(),
+                "CleanerSubstitutePassageIDCard": CleanerSubstitutePassageIDCard(),
+                "CleanerSubstitutePassageIP": CleanerSubstitutePassageIP(),
+                "CleanerSubstitutePassagePhone": CleanerSubstitutePassagePhone(),
+                "CleanerSubstitutePassageURL": CleanerSubstitutePassageURL(),
             }
 
     def load_settings(self, setting: Settings) -> None:
@@ -37,6 +42,11 @@ class Cleaner():
         self.rm_str_seg = self.clean_setting['rm_str_seg']['str_list'] if self.clean_setting['rm_str_seg']['use'] else []
         self.rm_re_seg = self.clean_setting['rm_re_seg']['re_list'] if self.clean_setting['rm_re_seg']['use'] else []
         self.tra2sim = self.clean_setting['tra2sim']
+        self.rm_email = self.clean_setting['rm_email']
+        self.rm_idcard = self.clean_setting['rm_idcard']
+        self.rm_ip = self.clean_setting['rm_ip']
+        self.rm_phone = self.clean_setting['rm_phone']
+        self.rm_url = self.clean_setting['rm_url']
 
     def clean_single_text(self, text: str) -> str:
         # if self.if_clean == False, then do not clean, just return origin text {{text}}
@@ -73,4 +83,14 @@ class Cleaner():
             text = self.cleaner_ops['CleanerSubstitutePassageSimplifiedChinese'].clean_single_text(text, target)
         if self.sub_newline['use']:
             text = self.cleaner_ops['CleanerRemovePassageNewline'].clean_single_text(text)
+        if self.rm_email['use']:
+            text = self.cleaner_ops['CleanerSubstitutePassageEmail'].clean_single_text(text)
+        if self.rm_idcard['use']:
+            text = self.cleaner_ops['CleanerSubstitutePassageIDCard'].clean_single_text(text)
+        if self.rm_ip['use']:
+            text = self.cleaner_ops['CleanerSubstitutePassageIP'].clean_single_text(text)
+        if self.rm_phone['use']:
+            text = self.cleaner_ops['CleanerSubstitutePassagePhone'].clean_single_text(text)
+        if self.rm_url['use']:
+            text = self.cleaner_ops['CleanerSubstitutePassageURL'].clean_single_text(text)
         return text

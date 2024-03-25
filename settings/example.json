@@ -128,6 +128,21 @@
         "tra2sim": {
             "use": false,
             "target": "zh-cn"
+        },
+        "rm_email": {
+            "use": false
+        },
+        "rm_idcard": {
+            "use": false
+        },
+        "rm_ip": {
+            "use": false
+        },
+        "rm_phone": {
+            "use": false
+        },
+        "rm_url": {
+            "use": false
         }
     },
     "if_dedup": false,

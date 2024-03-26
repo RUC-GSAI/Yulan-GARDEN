@@ -1,8 +1,12 @@
-# ZHEM: An Integrated Data Processing Framework for Pretraining Foundation Models
+# Yulan-GARDEN: An Integrated Data Processing Framework for Pretraining Foundation Models
 
 Authors: Yiding Sun*, Feng Wang*, Yutao Zhu, Wayne Xin Zhao, Jiaxin Mao
 
-\[[Paper](https://arxiv.org/abs/2402.16358)\] \[[Github Repo](https://github.com/Emanual20/ZHEM)\] \[[Demo Video](https://drive.google.com/file/d/12StUSb-6Q3ej3Qnzi74kkcJkkqxwWccu)\]
+\[[Paper](https://arxiv.org/abs/2402.16358)\] \[[Github Repo](https://github.com/Emanual20/Yulan-GARDEN)\] \[[Demo Video](https://drive.google.com/file/d/12StUSb-6Q3ej3Qnzi74kkcJkkqxwWccu)\]
+
+🚀 \[2024/03/26\] Our [Paper](https://arxiv.org/abs/2402.16358) has been accepted by the Demo paper track of SIGIR 2024 conference!
+
+📖 \[2024/03/25\] Our project has renamed to [Yulan-GARDEN](https://github.com/Emanual20/Yulan-GARDEN) from ZHEM. **Yulan-GARDEN** signifies that Yulan series LLMs (Yulan-LLM and Yulan-Chat) was brought up by Yulan-GARDEN (data produced by Yulan-GARDEN).
 
 ## Introduction 
 
@@ -10,11 +14,10 @@ The ability of the foundation models heavily relies on large-scale, diverse, and
 In order to improve data quality, researchers and practitioners often have to manually curate datasets from difference sources and develop dedicated data cleansing pipeline for each data repository.    
 Lacking a unified data processing framework, this process is repetitive and cumbersome.
 
-To mitigate this issue, we propose this data processing framework **ZHEM** that integrates a **Processing Module** which consists of a series of operators at different granularity levels, and an **Analyzing Module** which supports probing and evaluation of the refined data. 
+To mitigate this issue, we propose this data processing framework **Yulan-GARDEN** (an inte**G**rated d**A**ta p**R**ocessing framework for foun**D**ation mod**E**ls pretrai**N**ing) that integrates a **Processing Module** which consists of a series of operators at different granularity levels, and an **Analyzing Module** which supports probing and evaluation of the refined data. 
 Instead of Code, we first introduce how to use this framework with some example use cases and then demonstrate its effectiveness in improving the data quality with an automated evaluation with ChatGPT and an end-to-end evaluation in pretraining the GPT-2 model.
 
 More Details an be found in our [Paper](https://arxiv.org/abs/2402.16358).
-
 
 
 ## Quick Start
@@ -40,9 +43,9 @@ After running the processing pipeline, the cleaned data will be merged as a `.js
 
 ## Basic Components
 
-![Basic components of ZHEM pipeline](assets/ZHEM_figure_2.png)
+![Basic components of Yulan-GARDEN pipeline](assets/ZHEM_figure_2.png)
 
-ZHEM framework consists of two main modules, the Processing Module and Analyzing Module. The Usage Details can be found README.md in corresponding directories.
+Yulan-GARDEN framework consists of two main modules, the Processing Module and Analyzing Module. The Usage Details can be found README.md in corresponding directories.
 
 ### Processing Module 
 
@@ -54,7 +57,7 @@ Analyzing Module helps users facilitate a more profound comprehension of dataset
 
 ## Experiments
 
-We conduct two experiments to validate the effectiveness of ZHEM in improving the data quality. Through automated evaluation with ChatGPT, we observe a significant improvement in the quality of refined dataset when applied to OpenWebText2, Wikipedia, and HackerNews. In the end-to-end evaluation, we train two GPT-2 models using CommonCrawl before and after processing, respectively. The model trained on the refined data demonstrates remarkable performance enhancement across downstream tasks of language modeling compared to the baseline.
+We conduct two experiments to validate the effectiveness of Yulan-GARDEN in improving the data quality. Through automated evaluation with ChatGPT, we observe a significant improvement in the quality of refined dataset when applied to OpenWebText2, Wikipedia, and HackerNews. In the end-to-end evaluation, we train two GPT-2 models using CommonCrawl before and after processing, respectively. The model trained on the refined data demonstrates remarkable performance enhancement across downstream tasks of language modeling compared to the baseline.
 
 ### Automated Evaluation
 

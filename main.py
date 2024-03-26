@@ -10,5 +10,5 @@ if __name__ == '__main__':
     parser.add_argument('--o', type=int, default=0)
     args = parser.parse_args()
 
-    # run zhem
+    # run Yulan-GARDEN
     ret_args = run_zhem(args.conf, args.f, args.o)

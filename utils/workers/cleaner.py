@@ -43,11 +43,11 @@ class Cleaner():
         self.rm_str_seg = self.clean_setting['rm_str_seg']['str_list'] if self.clean_setting['rm_str_seg']['use'] else []
         self.rm_re_seg = self.clean_setting['rm_re_seg']['re_list'] if self.clean_setting['rm_re_seg']['use'] else []
         self.tra2sim = self.clean_setting['tra2sim']
-        self.rm_email = self.clean_setting['rm_email']
-        self.rm_idcard = self.clean_setting['rm_idcard']
-        self.rm_ip = self.clean_setting['rm_ip']
-        self.rm_phone = self.clean_setting['rm_phone']
-        self.rm_url = self.clean_setting['rm_url']
+        self.rm_email = self.clean_setting['rm_pii']['details']['email'] if self.clean_setting['rm_pii']['use'] else False
+        self.rm_idcard = self.clean_setting['rm_pii']['details']['idcard'] if self.clean_setting['rm_pii']['use'] else False
+        self.rm_ip = self.clean_setting['rm_pii']['details']['ip'] if self.clean_setting['rm_pii']['use'] else False
+        self.rm_phone = self.clean_setting['rm_pii']['details']['phone'] if self.clean_setting['rm_pii']['use'] else False
+        self.rm_url = self.clean_setting['rm_pii']['details']['url'] if self.clean_setting['rm_pii']['use'] else False
         self.dedup_line_ngram = self.clean_setting['dedup_line_ngram']
         self.dedup_line_n, self.dedup_line_thresim = self.dedup_line_ngram["n"], self.dedup_line_ngram["thre_sim"]
 
@@ -86,15 +86,15 @@ class Cleaner():
             text = self.cleaner_ops['CleanerSubstitutePassageSimplifiedChinese'].clean_single_text(text, target)
         if self.sub_newline['use']:
             text = self.cleaner_ops['CleanerRemovePassageNewline'].clean_single_text(text)
-        if self.rm_email['use']:
+        if self.rm_email:
             text = self.cleaner_ops['CleanerSubstitutePassageEmail'].clean_single_text(text)
-        if self.rm_idcard['use']:
+        if self.rm_idcard:
             text = self.cleaner_ops['CleanerSubstitutePassageIDCard'].clean_single_text(text)
-        if self.rm_ip['use']:
+        if self.rm_ip:
             text = self.cleaner_ops['CleanerSubstitutePassageIP'].clean_single_text(text)
-        if self.rm_phone['use']:
+        if self.rm_phone:
             text = self.cleaner_ops['CleanerSubstitutePassagePhone'].clean_single_text(text)
-        if self.rm_url['use']:
+        if self.rm_url:
             text = self.cleaner_ops['CleanerSubstitutePassageURL'].clean_single_text(text)
         if self.dedup_line_ngram['use']:
             text = self.cleaner_ops['CleanerDedupLineByNgram'].clean_single_text(text, self.dedup_line_n, self.dedup_line_thresim)

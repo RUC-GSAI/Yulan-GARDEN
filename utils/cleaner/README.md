@@ -22,14 +22,8 @@ Cleaner (`./utils/workers/cleaner.py`) is a submodule of the Processing Module t
 
 10. `rm_re_seg`: remove **a segment** after matching any of **string** in `re_list` if any text fragments in this text are matched.
 
-11. `rm_email`: remove **email address**.
+11. `rm_pii`: remove **personally identifiable information** including emails, idcards, ips, phones and urls
 
-12. `rm_idcard`: remove **idcard numbers**.
+12. `tra2sim`: convert Traditional Chinese to Simplified Chinese.
 
-13. `rm_ip`: remove **ip address**.
-
-14. `rm_phone`: remove **phone numbers**.
-
-15. `tra2sim`: convert Traditional Chinese to Simplified Chinese.
-
-16. `my_funcs`: other custom rules. You can set your custom rules in `./utils/utils/my_funcs.py` as functions and add the names of the functions into the setting files. 
+13. `my_funcs`: other custom rules. You can set your custom rules in `./utils/utils/my_funcs.py` as functions and add the names of the functions into the setting files. 

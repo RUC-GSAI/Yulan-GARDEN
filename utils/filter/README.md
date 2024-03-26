@@ -20,6 +20,6 @@ Filter (`./utils/workers/filter.py`) is a module to filter the useless or sensit
 
 9. `fil_alphanum`: non-English texts (hyperparamter: lower bound and upper bound ratio of non-English characters).
 
-10. `fil_my_rules`: other custom rules. To make ZHEM more flexible, you can set your custom rules in `./utils/utils/my_rules.py` as functions and add the names of the functions into the setting files.
+10. `fil_my_rules`: other custom rules. To make Yulan-GARDEN more flexible, you can set your custom rules in `./utils/utils/my_rules.py` as functions and add the names of the functions into the setting files.
 
 All the hyperparamters are changable in the light of `Debugger`.

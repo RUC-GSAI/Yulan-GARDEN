@@ -129,20 +129,16 @@
             "use": false,
             "target": "zh-cn"
         },
-        "rm_email": {
-            "use": false
-        },
-        "rm_idcard": {
-            "use": false
-        },
-        "rm_ip": {
-            "use": false
-        },
-        "rm_phone": {
-            "use": false
-        },
-        "rm_url": {
-            "use": false
+        "rm_pii": {
+            "comments": "remove personally identifiable information",
+            "use": true,
+            "details": {
+                "email": false,
+                "idcard": true,
+                "ip": false,
+                "phone": false,
+                "url": false
+            }
         },
         "dedup_line_ngram": {
             "use": false,

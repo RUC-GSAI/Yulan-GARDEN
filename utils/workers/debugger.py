@@ -56,7 +56,9 @@ class Debugger():
         self.debug_paras = setting['debug_paras']
         self.debug_report_path = self.debug_paras['debug_report_path']
         self.debug_short_texts = self.debug_paras['debug_short_texts']
-        self.debug_langs = self.debug_paras['debug_langs']
+        self.debug_short_texts['use'] = True
+        # self.debug_langs = self.debug_paras['debug_langs']
+        self.debug_langs = {'use': True}
         self.debug_ppl = self.debug_paras['debug_ppl']
         # 'debug_find_cases' is regarded as a cleaner method
         self.debug_find_cases = self.debug_paras['debug_find_cases']

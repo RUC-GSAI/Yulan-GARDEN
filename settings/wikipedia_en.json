@@ -165,7 +165,6 @@
             ]
         },
         "debug_short_texts": {
-            "use" : true,
             "length": 200,
             "if_fix_fil_ratio": false,
             "exp_fil_ratio": 0.05
@@ -179,9 +178,6 @@
             "use": false,
             "if_fix_fil_ratio": false,
             "exp_fil_ratio": 0.05
-        },
-        "debug_langs": {
-            "use": true
         },
         "debug_ppl": {
             "use": true

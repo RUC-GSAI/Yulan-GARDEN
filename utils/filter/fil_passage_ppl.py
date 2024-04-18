@@ -46,6 +46,25 @@ class FilterPassageByPPL(FilterBase):
             with open(bound_path, "r") as fr:
                 self.ppl_filter_thresholds = json.load(fr)
         else:
+            self.ppl_filter_thresholds = None
+        self.reject_cnt = 0
+        self.accept_cnt = 0
+
+
+    def calc_filter_threshold_without_debugger(self):
+        dts = self.sampler._sample_randomly(self.input_path)
+        ppls = defaultdict(list)
+        for dt in dts:
+            text = dt['text']
+            lang_label, lang_score = self.langidentifier.evaluate_single_text(text)
+            cur_ppl = self.perplexity_evaluator.evaluate_single_text(text, lang=lang_label[0])
+            if cur_ppl is not None:
+                ppls[lang_label[0]].append(cur_ppl)
+        self.calc_filter_threshold(ppls=ppls, param=self.sigma)
+
+    def calc_filter_threshold(self, ppls: dict, param: float) -> None:
+        assert param > 0
+        if self.ppl_filter_thresholds == None:
             self.ppl_filter_thresholds = {
                 "en":{
                     "lower_bound": 0.0,
@@ -60,26 +79,6 @@ class FilterPassageByPPL(FilterBase):
                     "upper_bound": 0.0
                 }
             }
-            self._calc_filter_threshold()
-
-        print(self.ppl_filter_thresholds)
-        self.reject_cnt = 0
-        self.accept_cnt = 0
-
-
-    def _calc_filter_threshold(self):
-        dts = self.sampler._sample_randomly(self.input_path)
-        ppls = defaultdict(list)
-        for dt in dts:
-            text = dt['text']
-            lang_label, lang_score = self.langidentifier.evaluate_single_text(text)
-            cur_ppl = self.perplexity_evaluator.evaluate_single_text(text, lang=lang_label[0])
-            if cur_ppl is not None:
-                ppls[lang_label[0]].append(cur_ppl)
-        self.calc_filter_threshold(ppls=ppls, param=self.sigma)
-
-    def calc_filter_threshold(self, ppls: dict, param: float) -> None:
-        assert param > 0
         global_logger.log_text("Begin to Calculate the upper and lower bounds of the ppl filtering threshold..")
         self.ppl_distributed = ppls
         # determine the lower_bound and upper_bound according to the sampled items
@@ -93,7 +92,9 @@ class FilterPassageByPPL(FilterBase):
             self.ppl_filter_thresholds[lang]["upper_bound"] = range_sigma[1]
             global_logger.log_text(f"For {lang}, calculating the upper bound({self.ppl_filter_thresholds[lang]['upper_bound']}) ({param} * sigma) of the ppl filtering threshold completed!!")
 
-    def filter_single_text(self, text: str, lang: str="") -> bool:      
+    def filter_single_text(self, text: str, lang: str="") -> bool:
+        if self.ppl_filter_thresholds == None:
+            self.calc_filter_threshold_without_debugger()
         # label the language of current text
         if len(lang) == 0:
             lang, scores = self.langidentifier.evaluate_single_text(text)

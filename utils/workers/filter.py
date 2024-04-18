@@ -17,7 +17,7 @@ class Filter:
                 "FilterPassageByLangScore": FilterPassageByLangScore(),
                 "FilterPassageByLength": FilterPassageByLength(),
                 # ppl need a parameter {{input_path}} to initialize
-                "FilterPassageByPPL": FilterPassageByPPL(self.input_path, os.path.join(self.output_path, 'sample.jsonl'), os.path.join(self.output_path, 'bound.json')),
+                "FilterPassageByPPL": FilterPassageByPPL(self.input_path, os.path.join(self.output_path, 'sample.jsonl'), os.path.join(self.output_path, 'bound.json'), self.fil_ppl['param']),
                 "FilterPassageByProportionOfAlphaNumber": FilterPassageByProportionOfAlphaNumber(),
                 "FilterPassageByProportionOfNonChineseChars": FilterPassageByProportionOfNonChineseChars(),
                 "FilterPassageByProportionofShortline": FilterPassageByProportionofShortline(),

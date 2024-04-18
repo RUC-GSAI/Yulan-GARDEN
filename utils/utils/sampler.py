@@ -71,6 +71,7 @@ class Sampler():
                 
         if self.output_to_file:
             global_logger.log_text(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines into {self.output_path}..")
+            return None
         else:
             global_logger.log_text(f"finish sample randomly {self.SAMPLE_RANDOMLY_NUM} / {line_num} lines..")
             return ret

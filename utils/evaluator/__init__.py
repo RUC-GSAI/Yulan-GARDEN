@@ -1,3 +1,3 @@
-from utils.evaluator.GPTEvaluator import *
-from utils.evaluator.LangIdentifier import *
-from utils.evaluator.PerplexityEvaluator import *
+from utils.evaluator.GPTEvaluator import GPTEvaluator
+from utils.evaluator.LangIdentifier import LangIdentifier
+from utils.evaluator.PerplexityEvaluator import PerplexityEvaluator

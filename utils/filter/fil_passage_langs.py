@@ -20,7 +20,7 @@ class FilterPassageByLangs(FilterBase):
         if the language score of {{text}} less than {{reject_threshold}}, then filter it
         '''      
         labels, scores = self.language_identifier.evaluate_single_text(text)
-        if any(score < self.reject_threshold for score in scores):
+        if all(score < self.reject_threshold for score in scores):
             # uk means "unknown"
             labels = ["uk"]
 

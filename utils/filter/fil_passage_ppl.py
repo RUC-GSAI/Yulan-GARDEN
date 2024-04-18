@@ -13,15 +13,20 @@ class FilterPassageByPPL(FilterBase):
     '''
     The Subclass of FilterBase class.
     '''
-    def __init__(self, input_path: str = "", output_path: str = "", bound_path: str = "") -> None:
+    def __init__(self, input_path: str = "", output_path: str = "", bound_path: str = "", sigma: float = 1.0) -> None:
         self.perplexity_evaluator = PerplexityEvaluator(
             model_path="utils/models/kenlm/"
         )
         self.sample_cnt = 0
 
+        self.input_path, self.output_path, self.bound_path = input_path, output_path, bound_path
+        self.sigma = sigma
+
         self.samplerconfig = SampleConfig()
         self.samplerconfig['input_path'] = input_path
         self.samplerconfig['output_path'] = output_path
+        self.samplerconfig['SAMPLE_RANDOMLY_NUM'] = 500
+
         self.samplerconfig['output_to_file'] = False
         self.samplerconfig['if_sample_randomly'] = True
         self.samplerconfig['if_sample_by_length'] = False
@@ -36,6 +41,7 @@ class FilterPassageByPPL(FilterBase):
         )
 
         self.ppl_distributed = defaultdict(list)
+        # for simplify code of this moduld, we move the process of calculating the filter threshold into utils/workers/debugger.py
         if os.path.exists(bound_path):
             with open(bound_path, "r") as fr:
                 self.ppl_filter_thresholds = json.load(fr)
@@ -54,11 +60,23 @@ class FilterPassageByPPL(FilterBase):
                     "upper_bound": 0.0
                 }
             }
-        
-        # self._calc_filter_threshold()
+            self._calc_filter_threshold()
 
+        print(self.ppl_filter_thresholds)
         self.reject_cnt = 0
         self.accept_cnt = 0
+
+
+    def _calc_filter_threshold(self):
+        dts = self.sampler._sample_randomly(self.input_path)
+        ppls = defaultdict(list)
+        for dt in dts:
+            text = dt['text']
+            lang_label, lang_score = self.langidentifier.evaluate_single_text(text)
+            cur_ppl = self.perplexity_evaluator.evaluate_single_text(text, lang=lang_label[0])
+            if cur_ppl is not None:
+                ppls[lang_label[0]].append(cur_ppl)
+        self.calc_filter_threshold(ppls=ppls, param=self.sigma)
 
     def calc_filter_threshold(self, ppls: dict, param: float) -> None:
         assert param > 0

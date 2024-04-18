@@ -6,7 +6,7 @@ Authors: Yiding Sun*, Feng Wang*, Yutao Zhu, Wayne Xin Zhao, Jiaxin Mao
 
 🚀 \[2024/03/26\] Our [Paper](https://arxiv.org/abs/2402.16358) has been accepted by the Demo paper track of SIGIR 2024 conference!
 
-📖 \[2024/03/25\] Our project has renamed to [Yulan-GARDEN](https://github.com/Emanual20/Yulan-GARDEN) from ZHEM. **Yulan-GARDEN** signifies that Yulan series LLMs (Yulan-LLM and Yulan-Chat) was brought up by Yulan-GARDEN (data produced by Yulan-GARDEN).
+📖 \[2024/03/25\] Our project has been renamed to [Yulan-GARDEN](https://github.com/Emanual20/Yulan-GARDEN) from ZHEM. **Yulan-GARDEN** signifies that Yulan series LLMs (Yulan-LLM and Yulan-Chat) was brought up by Yulan-GARDEN (data produced by Yulan-GARDEN).
 
 ## Introduction 
 

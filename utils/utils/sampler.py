@@ -78,36 +78,47 @@ class Sampler():
         
     def _no_sample(self, input_path) -> None:
         global_logger.log_text(f"begin to dump all lines from {input_path}..")
+        ret = []
         
         # mode: append (if self.input_path is a list, there may be many writings)
         with open(input_path, mode='r', encoding="utf-8") as fr, open(self.output_path, mode='a') as fw:
             cnt = 0
             for line in fr:
-                fw.write(line)
+                if self.output_to_file:
+                    fw.write(line)
+                else:
+                    ret.append(json.loads(line))
                 cnt += 1
                 
         global_logger.log_text(f"finish dump all lines into {self.output_path}..")
+        if self.output_to_file:
+            return None
+        else:
+            return ret
         
     def sample_randomly_works(self) -> None:
         '''
         self.input_path can be a work list (from prepare_works) or a file
         '''
+        ret = []
         # to clear the file: self.output_path
         with open(self.output_path, mode='w') as fw:
             pass   
         if self.if_sample:             
             if isinstance(self.input_path, list):
                 for input_path in self.input_path:
-                    self._sample_randomly(input_path)
+                    samples = self._sample_randomly(input_path)
+                    ret = ret + samples if not self.output_to_file else None
             else:
-                self._sample_randomly(self.input_path)
+                ret = self._sample_randomly(self.input_path)
         else:
             if isinstance(self.input_path, list):
                 for input_path in self.input_path:
-                    print(input_path)
-                    self._no_sample(input_path)
+                    samples = self._no_sample(input_path)
+                    ret = ret + samples if not self.output_to_file else None
             else:
-                self._no_sample(self.input_path)
+                ret = self._no_sample(self.input_path)
+        return ret        
 
     def gen_length_statistic(self, len_list: list):
         mean = np.mean(len_list)

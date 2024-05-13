@@ -1,6 +1,7 @@
 from utils.filter.filter_base import FilterBase
 from utils.evaluator import LangIdentifier, PerplexityEvaluator
 from utils.utils.sampler import SampleConfig, Sampler
+from utils.utils import prepare_works
 
 from collections import defaultdict
 from utils.utils.logger import global_logger
@@ -22,18 +23,6 @@ class FilterPassageByPPL(FilterBase):
         self.input_path, self.output_path, self.bound_path = input_path, output_path, bound_path
         self.sigma = sigma
 
-        self.samplerconfig = SampleConfig()
-        self.samplerconfig['input_path'] = input_path
-        self.samplerconfig['output_path'] = output_path
-        self.samplerconfig['SAMPLE_RANDOMLY_NUM'] = 500
-
-        self.samplerconfig['output_to_file'] = False
-        self.samplerconfig['if_sample_randomly'] = True
-        self.samplerconfig['if_sample_by_length'] = False
-        self.sampler = Sampler(
-            self.samplerconfig
-        )
-
         self.text_field = "text"
         self.lang_field = "language"
         self.langidentifier = LangIdentifier(
@@ -52,7 +41,19 @@ class FilterPassageByPPL(FilterBase):
 
 
     def calc_filter_threshold_without_debugger(self):
-        dts = self.sampler._sample_randomly(self.input_path)
+        self.samplerconfig = SampleConfig()
+        # self.samplerconfig['input_path'] = input_path
+        work_path = os.path.join(self.output_path, '.tmp')
+        self.samplerconfig['input_path'] = prepare_works(work_path, input_ext='jsonl')
+        self.samplerconfig['output_path'] = os.path.join(self.output_path, 'sample.jsonl')
+        self.samplerconfig['SAMPLE_RANDOMLY_NUM'] = 500
+        self.samplerconfig['output_to_file'] = False
+        self.samplerconfig['if_sample_randomly'] = True
+        self.samplerconfig['if_sample_by_length'] = False
+        self.sampler = Sampler(
+            self.samplerconfig
+        )
+        dts = self.sampler.sample_randomly_works()
         ppls = defaultdict(list)
         for dt in dts:
             text = dt['text']

@@ -12,6 +12,8 @@ def compare_nested_dicts(dictA, dictB, depth=1, changes=None, curr_key=''):
 
     keysA = set(dictA.keys())
     keysB = set(dictB.keys())
+    print(f'keysA: {keysA}')
+    print(f'keysB: {keysB}')
 
     # Check if the key of B completely contains the key of A
     if keysA != keysB:
@@ -35,7 +37,7 @@ def compare_nested_dicts(dictA, dictB, depth=1, changes=None, curr_key=''):
 # a problem: Unable to use relative path of `example_conf_path`
 class Settings:
     def __init__(
-            self, conf_path: str="", example_conf_path = '/home/u2022101014/ZHEM/settings/example.json'
+            self, conf_path: str="", example_conf_path = 'settings/example.json'
     ):
         self.settings = defaultdict(str)
         self.example_settings = defaultdict(str)
@@ -43,7 +45,7 @@ class Settings:
         self._compare_settings()
 
     def load_settings(
-            self, conf_path: str="", example_conf_path = '/home/u2022101014/ZHEM/settings/example.json'
+            self, conf_path: str="", example_conf_path = 'settings/example.json'
     ) -> None:
         try:
             with open(conf_path, 'r') as fr:

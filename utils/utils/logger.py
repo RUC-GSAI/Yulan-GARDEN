@@ -1,8 +1,12 @@
 import logging
+import os
 
 class Logger():
     def __init__(self, name="Global Logger", file="tmp/process.log"):
         self.logger = logging.getLogger(name)
+
+        if file and not os.path.exists(os.path.dirname(file)):
+            os.makedirs(os.path.dirname(file), exist_ok=True)
 
         if file:
             file_handler = logging.FileHandler(file)

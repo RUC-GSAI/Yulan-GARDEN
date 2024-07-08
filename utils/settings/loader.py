@@ -12,8 +12,8 @@ def compare_nested_dicts(dictA, dictB, depth=1, changes=None, curr_key=''):
 
     keysA = set(dictA.keys())
     keysB = set(dictB.keys())
-    print(f'keysA: {keysA}')
-    print(f'keysB: {keysB}')
+    # print(f'keysA: {keysA}')
+    # print(f'keysB: {keysB}')
 
     # Check if the key of B completely contains the key of A
     if keysA != keysB:

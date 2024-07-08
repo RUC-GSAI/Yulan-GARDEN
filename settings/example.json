@@ -1,8 +1,8 @@
 {
-    "input_path": "your_input_data_path",
+    "input_path": "your_input_data_path (please use absolute path)",
     "input_ext": "jsonl",
     "input_text_key": "text",
-    "output_path": "your_output_data_path",
+    "output_path": "your_output_data_path (please use absolute path)",
     "output_source_value": "the-dataset-name",
     "if_filter": false,
     "filter_paras": {

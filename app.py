@@ -416,7 +416,7 @@ def processing():
             with open(os.path.join(tmp_folder, 'ret_args.json'), 'w') as fw:
                 json.dump(ret_args, fw, indent=4)
 
-            # # add data imformation (know about the input_path and output_path of all the refined data)
+            # add data imformation (know about the input_path and output_path of all the refined data)
             add_data_information(refined_data_path, config)
             ## ------------------ es ------------------
             create_ElasticObj_index(config=config, data_type='_refined')
@@ -431,8 +431,7 @@ def processing():
             # load the temp results
             with open(os.path.join(tmp_folder, 'ret_args.json'), 'r') as fr:
                 ret_args = json.load(fr)
-            with open(os.path.join(tmp_folder, 'sample_results.json'), 'r') as fr:
-                sample_results = json.load(fr)
+            sample_results = ret_args['sample_results']
 
             return render_template('processing.html', ret_args=ret_args, sample_results=sample_results, source=session['retriever_source'])
     return render_template('processing.html')

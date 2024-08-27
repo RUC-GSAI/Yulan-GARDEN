@@ -100,12 +100,20 @@ It indicates that utilizing our proposed data processing framework enhances both
 If you find our work useful, please cite this repository or our paper: 
 
 ```
-@misc{sun2024integrated,
-    title={An Integrated Data Processing Framework for Pretraining Foundation Models},
-    author={Yiding Sun and Feng Wang and Yutao Zhu and Wayne Xin Zhao and Jiaxin Mao},
-    year={2024},
-    eprint={2402.16358},
-    archivePrefix={arXiv},
-    primaryClass={cs.LG}
+@inproceedings{10.1145/3626772.3657671,
+author = {Sun, Yiding and Wang, Feng and Zhu, Yutao and Zhao, Wayne Xin and Mao, Jiaxin},
+title = {An Integrated Data Processing Framework for Pretraining Foundation Models},
+year = {2024},
+isbn = {9798400704314},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3626772.3657671},
+doi = {10.1145/3626772.3657671},
+booktitle = {Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval},
+pages = {2713–2718},
+numpages = {6},
+keywords = {data processing, data quality, large language models},
+location = {Washington DC, USA},
+series = {SIGIR '24}
 }
 ```
